@@ -1,0 +1,89 @@
+
+🕵️‍ Évaluation des compétences
+🎯Déployer un modèle via une API dans le Web
+
+❒ Un fichier (par exemple format pickle) contenant un modèle de machine learning sérialisé a été créé et le modèle chargé depuis le fichier fonctionne
+
+❒ Le modèle de machine learning est déployé sous forme d'API (via Flask par exemple) et cette API renvoie bien la prédiction correspondante à un client en réponse à un identifiant client
+
+❒ L'API est déployée sur le web via un outil gratuit et disponible plusieurs mois (en vue du jury)
+
+❒ L'API est appelée par l’application Dashboard via une requête. Ces deux applications sont indépendantes.
+
+ 
+
+🎯Réaliser un dashboard pour présenter son travail de modélisation
+
+❒ Au moins un parcours utilisateur simple permettant de répondre aux besoins des utilisateurs (les différentes actions/clics sur les différents graphiques permettant de répondre à une question que se pose l'utilisateur) a été décrit et conçu
+
+❒ Au moins deux graphiques interactifs permettant aux utilisateurs d'explorer les données clients ont été développés (l’objectif est de répondre à des questions comme "quel est le client avec le plus de transactions ?")
+
+❒ Les graphiques réalisés respectent les règles de lisibilités et de clarté (cf. ressource pédagogique dans le projet)
+
+❒ Les graphiques réalisés sont pertinents (ils permettent de répondre à la problématique métier)
+
+❒ Le dashboard est accessible pour d'autres utilisateurs sur leurs postes de travail (déploiement dans le web)
+
+ 
+
+🎯Présenter son travail de modélisation à l'oral
+
+❒ la méthode d'évaluation de la performance du modèle de machine learning,
+
+❒ la façon d'interpréter les résultats du modèle,
+
+❒ la façon d'interpréter l'importance des variables du modèle,
+
+❒... sont expliqués de manière simple et compréhensible par un public non technique
+
+❒ L’étudiant fournit des explications claires, avec assurance
+
+❒ L’étudiant a su répondre de manière simple (compréhensible par un public non technique) à au moins une question portant sur sa démarche de modélisation
+
+❒ La démarche de modélisation présente une évaluation complète des modèles, en particulier la comparaison de plusieurs modèles via une Cross-Validation et une optimisation des hyperparamètres (via GridsearchCV, RandomizedSearchCV ou équivalent)
+
+❒ La démarche de modélisation prend en compte le déséquilibre des classes (via un oversampling de type SMOTE ou via l’utilisation de “class_weight” par exemple)
+
+ 
+
+🎯Rédiger une note méthodologique afin de communiquer sa démarche de modélisation
+
+❒ La démarche de modélisation est présentée de manière synthétique dans la note (2 pages max)
+
+❒ La fonction coût métier, l'algorithme d'optimisation et la métrique d'évaluation sont explicités (1 page max)
+
+❒ L'interprétabilité globale et locale du modèle est explicitée (façon d'interpréter l'importance des variables n'est pas la même pour une régression logistique que pour un random forest) et les limites éventuelles sont précisées (1 page max)
+
+❒ Les limites et les améliorations envisageables pour gagner en performance et en interprétabilité de l'approche de modélisation sont décrites (1 page max)
+
+❒ Le rapport respecte la structure des document de ce type (cf. ressource pédagogique dans le projet)
+
+❒ Les règles d’orthographe et de syntaxe élémentaires ont été respectées
+
+ 
+
+🎯Utiliser un logiciel de version de code pour assurer l’intégration du modèle
+
+❒ Un dossier contenant tous les scripts du projet a été créé dans un logiciel de version de code (ex : Git) et partagé (ex : Github)
+
+❒ L'historique des modifications du projet affiche au moins trois versions distinctes et l'on peut accéder à ces anciennes versions
+
+❒ La liste des packages utilisés ainsi que leur numéro de version est disponible et tenu à jour
+
+❒ Le travail est réutilisable par d'autres personnes et la collaboration est facilitée :
+
+ un fichier introductif permet de comprendre l'objectif du projet et le découpage des dossiers
+ les scripts et les fonctions sont commentés
+ 
+
+🎯Respect des consignes
+
+❒ Les livrables sont complets
+
+❒ Les livrables ont été déposés 48h à l'avance
+
+❒ Le temps de présentation est bien géré par l'étudiant
+
+ 
+
+MERCI BEAUCOUP !Merci.Bien reçu.
