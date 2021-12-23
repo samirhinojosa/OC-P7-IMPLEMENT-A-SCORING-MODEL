@@ -25,6 +25,10 @@ def df_analysis(df, name_df, *args, **kwargs):
             flag (str): Flag to show complete information about
                         the dataset to analyse "complete" shows
                         all information about the dataset
+                        
+                analysis_type (str) : the analysis type are 
+                                      ["complete", "summarized", "header"]
+                                      By defaut "complete"
 
     Returns:
     -----------------
