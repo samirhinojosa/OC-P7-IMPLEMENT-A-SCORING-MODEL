@@ -3,6 +3,7 @@ import io
 import gc
 import timeit
 import pandas as pd
+import numpy as np
 from math import prod
 
 # Visualizations
@@ -68,6 +69,7 @@ def df_analysis(df, name_df, *args, **kwargs):
         empty_cols = [col for col in df.columns
                       if df[col].isna().all()]  # identifying empty columns
         df_rows_duplicates = df[df.duplicated()]  # identifying duplicates rows
+        
 
         # Creating a dataset based on Type object and records by columns
         type_cols = df.dtypes.apply(lambda x: x.name).to_dict()
@@ -78,8 +80,7 @@ def df_analysis(df, name_df, *args, **kwargs):
         df_resume["# NaN"] = list(df.isnull().sum())
         df_resume["% NaN"] = list(((df.isnull().sum()
                                     / len(df.index))*100).round(2))
-
-        # Printing the analysis header
+        
         print("\nAnalysis Header of", name_df, "dataset")
         print(80*"-")
 
@@ -88,6 +89,10 @@ def df_analysis(df, name_df, *args, **kwargs):
         print("- Total of NaN values:\t\t\t", df.isna().sum().sum())
         print("- Percentage of NaN:\t\t\t",
               round((df.isna().sum().sum()/prod(df.shape))
+                    * 100, 2), "%")
+        print("- Total of infinite values:\t\t", np.isinf(df).values.sum())
+        print("- Percentage of infinite values:\t",
+              round((np.isinf(df).values.sum()/prod(df.shape))
                     * 100, 2), "%")
         print("- Total of full duplicates rows:\t",
               df_rows_duplicates.shape[0])
