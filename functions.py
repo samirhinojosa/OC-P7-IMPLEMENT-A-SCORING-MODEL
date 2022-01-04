@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from math import prod
 
+
 # Visualizations
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -178,9 +179,11 @@ def df_analysis(df, name_df, *args, **kwargs):
             df_resume, df_desc = (pd.DataFrame() for i in range(2))
 
         elif analysis_type == "header":
-            del df_resume
-            gc.collect()
+
             df_resume = pd.DataFrame()
+            
+            del df_resume, df
+            gc.collect()
 
         pd.reset_option("display.max_rows")  # reset max of showing rows
         pd.reset_option("display.max_columns")  # reset max of showing cols
@@ -236,3 +239,4 @@ def barplot_and_pie(df, title, subtitle_keyword):
 
     plt.tight_layout()
     plt.show()
+
