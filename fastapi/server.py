@@ -21,12 +21,12 @@ def read_csv():
 
 
 @app.get("/")
-async def root():
+def root():
     return {"message": "Hello World"}
 
 
 @app.get("/customers-id")
-async def customers_id():
+def customers_id():
 
     df = read_csv()
     customersId = df["SK_ID_CURR"].tolist()
@@ -37,17 +37,21 @@ async def customers_id():
 @app.get("/customers/{customer_id}")
 def customers(customer_id: int):
 
+    # reading the csv
     df = read_csv()
 
-    df = df.head()
-    #data = df[df["SK_ID_CURR"] == customer_id]
-    #data = df[df["SK_ID_CURR"] == customer_id].to_json(orient="records")
-    df = df.to_dict("records")
-      
-    # Serializing json  
-    json_object = json.dumps(df) 
+    # Defining the features to get
+    COLUMNS = [
+        "SK_ID_CURR", "CODE_GENDER", "DAYS_BIRTH", "DAYS_EMPLOYED",
+        "CNT_CHILDREN", "FLAG_OWN_REALTY", "AMT_INCOME_TOTAL", 
+        "AMT_CREDIT"
+    ]
+
+    # Filtering by customer id
+    result = df[COLUMNS][df["SK_ID_CURR"] == customer_id].to_json(orient="records")
     
+    # Serializing json 
+    parsed = json.loads(result)
+    json_object = json.dumps(parsed) 
 
-
-    return json_object #{"item_id": customer_id} #data.to_dict("records") #{"message": data}
-    #return df.to_json(orient="records")
+    return json_object
