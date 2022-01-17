@@ -1,5 +1,6 @@
 import io
 import os
+import json 
 import pandas as pd
 import numpy as np
 
@@ -12,12 +13,9 @@ app = FastAPI(
 )
 
 
-def is_debug(debug=True):
+def read_csv():
 
-    if debug:
-        df = pd.read_csv(r"datasets/df_processed.csv", nrows=10000)
-    else:
-        df = pd.read_csv(r"datasets/df_processed.csv")
+    df = pd.read_csv("datasets/df_customers_to_predict.csv")
 
     return df
 
@@ -30,7 +28,26 @@ async def root():
 @app.get("/customers-id")
 async def customers_id():
 
-    df = is_debug(True)
+    df = read_csv()
     customersId = df["SK_ID_CURR"].tolist()
 
     return {"customersId": customersId}
+
+
+@app.get("/customers/{customer_id}")
+def customers(customer_id: int):
+
+    df = read_csv()
+
+    df = df.head()
+    #data = df[df["SK_ID_CURR"] == customer_id]
+    #data = df[df["SK_ID_CURR"] == customer_id].to_json(orient="records")
+    df = df.to_dict("records")
+      
+    # Serializing json  
+    json_object = json.dumps(df) 
+    
+
+
+    return json_object #{"item_id": customer_id} #data.to_dict("records") #{"message": data}
+    #return df.to_json(orient="records")
