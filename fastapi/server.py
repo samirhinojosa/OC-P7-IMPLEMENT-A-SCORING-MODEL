@@ -3,6 +3,7 @@ import os
 import json 
 import pandas as pd
 import numpy as np
+from datetime import date, timedelta
 
 from fastapi import FastAPI, File
 import lightgbm as lgb
@@ -17,20 +18,15 @@ app = FastAPI(
 )
 
 
-def read_csv():
+def read_csv():    
 
     df = pd.read_csv("datasets/df_customers_to_predict.csv")
 
     return df
 
 
-@app.get("/api")
-def root():
-    return {"message": "Hello World"}
-
-
-@app.get("/api/customers-id")
-def customers_id():
+@app.get("/api/customers")
+async def customers_id():
 
     df = read_csv()
     customersId = df["SK_ID_CURR"].tolist()
@@ -38,11 +34,8 @@ def customers_id():
     return {"customersId": customersId}
 
 
-@app.get("/api/customers/{customer_id}")
-def customers(customer_id: int):
-
-    # reading the csv
-    df = read_csv()
+@app.get("/api/customers/{id}")
+async def customers(id: int):
 
     # Defining the features to get
     COLUMNS = [
@@ -51,18 +44,31 @@ def customers(customer_id: int):
         "AMT_CREDIT"
     ]
 
+    # Reading the dataset
+    df = read_csv()
+
     # Filtering by customer id
-    result = df[COLUMNS][df["SK_ID_CURR"] == customer_id].to_json(orient="records")
+    df = df[COLUMNS][df["SK_ID_CURR"] == id]
     
-    # Serializing json 
-    parsed = json.loads(result)
-    json_object = json.dumps(parsed) 
+    for col in df.columns:
+        globals()[col] = df.iloc[0, df.columns.get_loc(col)]
+    
+    customer = {
+        "customerId" : int(SK_ID_CURR),
+        "gender" : "Man" if int(CODE_GENDER) == 0 else "Woman",
+        "age" : calculate_years(int(DAYS_BIRTH)),
+        "yearsEmployed" : calculate_years(int(DAYS_EMPLOYED)),
+        "children" : int(CNT_CHILDREN),
+        "ownRealty" : "No" if int(FLAG_OWN_REALTY) == 0 else "Yes",
+        "totalIncome" : float(AMT_INCOME_TOTAL),
+        "credit" : float(AMT_CREDIT)
+    }
+    
+    return customer
 
-    return json_object
 
-
-@app.get("/api/predict/{customer_id}")
-def predict(customer_id: int):
+@app.get("/api/predictions/customers/{id}")
+async def predict(id: int):
 
     # Loading the model
     model = joblib.load("model/model_1.0.2.pkl")
@@ -71,7 +77,7 @@ def predict(customer_id: int):
     df = read_csv()
 
     # Filtering by customer id
-    df = df[df["SK_ID_CURR"] == customer_id]
+    df = df[df["SK_ID_CURR"] == id]
     df.drop(columns=["SK_ID_CURR"], axis=1, inplace=True)
 
     # Predicting
@@ -84,3 +90,12 @@ def predict(customer_id: int):
         result = "Yes"    
 
     return {"repay" : result, "probability" : result_proba}
+
+
+def calculate_years(days):
+
+    today = date.today()
+    initial_date = today - timedelta(abs(days))
+    years = today.year - initial_date.year - ((today.month, today.day) < (initial_date.month, initial_date.day))
+
+    return years
