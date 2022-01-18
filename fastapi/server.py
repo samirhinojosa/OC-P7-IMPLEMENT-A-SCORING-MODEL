@@ -18,7 +18,18 @@ app = FastAPI(
 )
 
 
-def read_csv():    
+def read_csv():
+    """
+    Method used to read the csv.
+
+    Parameters:
+    -----------------
+        None
+
+    Returns:
+    -----------------
+        df (pandas.DataFrame): Dataset readed
+    """    
 
     df = pd.read_csv("datasets/df_customers_to_predict.csv")
 
@@ -63,7 +74,7 @@ async def customers(id: int):
         "totalIncome" : float(AMT_INCOME_TOTAL),
         "credit" : float(AMT_CREDIT)
     }
-    
+
     return customer
 
 
@@ -93,6 +104,17 @@ async def predict(id: int):
 
 
 def calculate_years(days):
+    """
+    Method used to calculate years based on date (today - quantity of days).
+
+    Parameters:
+    -----------------
+        days (int): Numbers of day to rest of today
+
+    Returns:
+    -----------------
+        years (int): Numbers of years
+    """
 
     today = date.today()
     initial_date = today - timedelta(abs(days))
