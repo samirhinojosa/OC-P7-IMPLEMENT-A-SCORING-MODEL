@@ -96,10 +96,10 @@ async def predict(id: int):
     result = model.predict(df)
     result_proba = model.predict_proba(df)
 
-    if (int(result[0]) == 1):
-         result = "No"
+    if (int(result[0]) == 0):
+         result = "Yes"
     else:
-         result = "Yes"    
+         result = "No"    
 
     return {"repay" : result, "probability" : result_proba}
 
