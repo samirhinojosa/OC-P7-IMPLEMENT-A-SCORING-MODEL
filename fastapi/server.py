@@ -83,7 +83,7 @@ async def customers(id: int):
 async def predict(id: int):
 
     # Loading the model
-    model = joblib.load("models/model_1.0.2_2.pkl")
+    model = joblib.load("models/model_1.0.2.pkl")
 
     # reading the csv
     df = read_csv()
