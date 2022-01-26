@@ -13,7 +13,7 @@ import joblib
 
 app = FastAPI(
     title="Home Credit Default Risk",
-    description="""Obtain information related to probability of a customer defaulting on loan.""",
+    description="""Obtain information related to probability of a client defaulting on loan.""",
     version="0.1.0",
 )
 
@@ -36,17 +36,17 @@ def read_csv():
     return df
 
 
-@app.get("/api/customers")
-async def customers_id():
+@app.get("/api/clients")
+async def clients_id():
 
     df = read_csv()
-    customersId = df["SK_ID_CURR"].tolist()
+    clientsId = df["SK_ID_CURR"].tolist()
 
-    return {"customersId": customersId}
+    return {"clientsId": clientsId}
 
 
-@app.get("/api/customers/{id}")
-async def customers(id: int):
+@app.get("/api/clients/{id}")
+async def clients(id: int):
 
     # Defining the features to get
     COLUMNS = [
@@ -58,14 +58,14 @@ async def customers(id: int):
     # Reading the dataset
     df = read_csv()
 
-    # Filtering by customer id
+    # Filtering by clients id
     df = df[COLUMNS][df["SK_ID_CURR"] == id]
     
     for col in df.columns:
         globals()[col] = df.iloc[0, df.columns.get_loc(col)]
     
-    customer = {
-        "customerId" : int(SK_ID_CURR),
+    client = {
+        "clientId" : int(SK_ID_CURR),
         "gender" : "Man" if int(CODE_GENDER) == 0 else "Woman",
         "age" : calculate_years(int(DAYS_BIRTH)),
         "yearsEmployed" : calculate_years(int(DAYS_EMPLOYED)),
@@ -76,10 +76,10 @@ async def customers(id: int):
         "credit" : float(AMT_CREDIT)
     }
 
-    return customer
+    return client
 
 
-@app.get("/api/predictions/customers/{id}")
+@app.get("/api/predictions/clients/{id}")
 async def predict(id: int):
 
     # Loading the model
@@ -88,7 +88,7 @@ async def predict(id: int):
     # reading the csv
     df = read_csv()
 
-    # Filtering by customer id
+    # Filtering by client id
     df = df[df["SK_ID_CURR"] == id]
     df = df.drop(columns=["SK_ID_CURR"])
 
