@@ -46,7 +46,14 @@ st.markdown(f""" <style>
 ########################################################
 # Page information
 ########################################################
-st.title("Home Credit - Default Risk")
+st_title = '<h1 style="color:#C80F2E;">Home Credit - Default Risk</h1>'
+st.markdown(st_title, unsafe_allow_html=True)
+
+
+#st.title("Home Credit - Default Risk")
+
+
+
 # st.header("This is the header")
 # st.subheader("This is the subheader")
 # st.text("Esto es una prueba.")
@@ -98,34 +105,6 @@ def client_prediction(id):
         return "Error"
 
 
-
-
-fig = go.Figure(go.Indicator(
-    mode = "gauge+number+delta",
-    value = 420,
-    domain = {'x': [0, 1], 'y': [0, 1]},
-    title = {'text': "Speed", 'font': {'size': 24}},
-    delta = {'reference': 400, 'increasing': {'color': "RebeccaPurple"}},
-    gauge = {
-        'axis': {'range': [None, 500], 'tickwidth': 1, 'tickcolor': "darkblue"},
-        'bar': {'color': "darkblue"},
-        'bgcolor': "white",
-        'borderwidth': 2,
-        'bordercolor': "gray",
-        'steps': [
-            {'range': [0, 250], 'color': 'cyan'},
-            {'range': [250, 400], 'color': 'royalblue'}],
-        'threshold': {
-            'line': {'color': "red", 'width': 4},
-            'thickness': 0.75,
-            'value': 490}}))
-
-fig.update_layout(paper_bgcolor = "lavender", font = {'color': "darkblue", 'family': "Arial"})
-
-
-
-
-
 ########################################################
 # Sidebar section
 ########################################################
@@ -153,109 +132,42 @@ if result:
 
         with col1_cc:
 
-            import numpy as np
-            #data2 = np.random.randn(10, 1)
-            #col1_cc.line_chart(data2)
-            # Plot!
-
-
             prediction = client_prediction(client_id)
-            col1_cc.write(round(float(list(prediction["probability"].keys())[0]), 3) * 100)
 
-            # fig2 = go.Figure()
-
-            # fig2.add_trace(go.Indicator(
-            #     value = float(list(prediction["probability"].keys())[0])*100,
-            #     delta = {'reference': float(list(prediction["probability"].keys())[0])},
-            #     gauge = {
-            #         'axis': {'visible': False}},
-            #     domain = {'row': 0, 'column': 0}))
-            # fig2.update_layout(
-            #     grid = {'rows': 2, 'columns': 2, 'pattern': "independent"},
-            #     template = {'data' : {'indicator': [{
-            #         'title': {'text': "Speed"},
-            #         'mode' : "number+delta+gauge",
-            #         'delta' : {'reference': float(list(prediction["probability"].keys())[0])}}]
-            #         }
-            #     }
-            # )
-
-
-
-            #col1_cc.plotly_chart(fig2, use_container_width=True)
-            #col1_cc.plotly_chart(fig, use_container_width=True)
-
-
-
-            plot_bgcolor = "#def"
-            quadrant_colors = [plot_bgcolor, "#2bad4e", "#eff229", "#f25829"] 
-            quadrant_text = ["", "<b>High</b>", "<b>Medium</b>", "<b>Low</b>"]
-
-            n_quadrants = len(quadrant_colors) - 1
-
-            current_value = round(float(list(prediction["probability"].keys())[0]), 3) * 100
-            min_value = 0
-            max_value = 100
-            hand_length = np.sqrt(2) / 4
-            hand_angle = np.pi * (1 - (max(min_value, min(max_value, current_value)) - min_value) / (max_value - min_value))
-
-            fig3 = go.Figure(
-                data=[
-                    go.Pie(
-                        values=[0.5] + (np.ones(n_quadrants) / 2 / n_quadrants).tolist(),
-                        rotation=90,
-                        hole=0.5,
-                        marker_colors=quadrant_colors,
-                        text=quadrant_text,
-                        textinfo="text",
-                        hoverinfo="skip",
-                    ),
-                ],
-                layout=go.Layout(
-                    showlegend=False,
-                    margin=dict(b=0,t=10,l=10,r=10),
-                    width=380,
-                    height=250,
-                    paper_bgcolor=plot_bgcolor,
-                    annotations=[
-                        go.layout.Annotation(
-                            text=f"<b>IOT sensot value:</b><br>{current_value} units",
-                            x=0.5, xanchor="center", xref="paper",
-                            y=0.25, yanchor="bottom", yref="paper",
-                            showarrow=False,
-                        )
-                    ],
-                    shapes=[
-                        go.layout.Shape(
-                            type="circle",
-                            x0=0.48, x1=0.52,
-                            y0=0.48, y1=0.52,
-                            fillcolor="#333",
-                            line_color="#333",
-                        ),
-                        go.layout.Shape(
-                            type="line",
-                            x0=0.5, x1=0.5 + hand_length * np.cos(hand_angle),
-                            y0=0.5, y1=0.5 + hand_length * np.sin(hand_angle),
-                            line=dict(color="#333", width=4)
-                        )
-                    ]
+            figP = go.Figure(
+                    go.Indicator(
+                        mode = "gauge+number",
+                        value = round(float(list(prediction["probability"].keys())[0]), 3) * 100,
+                        domain = {"x": [0, 1], "y": [0, 1]},
+                        gauge = {
+                            "axis": {"range": [None, 100], "tickwidth": 1, "tickcolor": "darkblue", "tick0": 0, "dtick": 20},
+                            "bar": {"color": "LawnGreen"},
+                            "bgcolor": "white",
+                            "steps": [
+                                {"range": [0, 35], "color": "Red"},
+                                {"range": [35, 65], "color": "Orange"},
+                                {"range": [65, 100], "color": "Green"}
+                            ],
+                        }
+                    )   
                 )
+
+            figP.update_layout(
+                paper_bgcolor="white",
+                font={
+                    "color": "darkblue",
+                    "family": "sans serif"
+                },
+                autosize=False,
+                width=500,
+                height=300,
+                margin=dict(
+                    l=50, r=50, b=0, t=0, pad=0
+                ),
             )
+            
+            col1_cc.plotly_chart(figP, use_container_width=True)
 
-            col1_cc.plotly_chart(fig3, use_container_width=True)
-
-
-
-
-
-
-
-
-
-
-
-        
         with col2_cc:
             st.markdown("**Client id:**")
             st.caption(data["clientId"])
