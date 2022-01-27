@@ -46,8 +46,10 @@ st.markdown(f""" <style>
 ########################################################
 # Page information
 ########################################################
-st_title = '<h1 style="color:#C80F2E;">Home Credit - Default Risk</h1>'
+st_title = '<h1 style="color:#C80F2E; margin-bottom:0; padding: 1.25rem 0px 0rem;">Home Credit - Default Risk</h1>'
+st_title_hr = '<hr style="background-color:#C80F2E; width:60%; text-align:left; margin-left:0; margin-top:0">'
 st.markdown(st_title, unsafe_allow_html=True)
+st.markdown(st_title_hr, unsafe_allow_html=True)
 
 
 #st.title("Home Credit - Default Risk")
@@ -111,7 +113,7 @@ def client_prediction(id):
 st.sidebar.image(image)
 #msg_info = st.sidebar.info("Select a client to **predict** whether he will **pay the loan**")
 msg_info = st.sidebar.info("Select a client to **obtain** " \
-                "information related to **probability** of a client **defaulting on loan**")
+                "information related to **probability** of a client **honoring on the loan**")
 st.sidebar.markdown("🔎 **Client selection**")
 client_selection_form = st.sidebar.form(key="client_selection")
 client_id = client_selection_form.selectbox(
@@ -128,16 +130,25 @@ if result:
 
         st.subheader("Client's information")
 
+        prediction = client_prediction(client_id)
+        prediction_value = round(float(list(prediction["probability"].keys())[0]), 3) * 100
+
+        if prediction["repay"] == "Yes":
+            st.success("Based on the client's information, the credit application is **accepted!**")
+        else:
+            if prediction_value > 50:
+                st.warning("It is necessary to **analyze more in details** the client's information to accept the credit")
+            else:
+                st.error("Based on the client's information, the credit application is ** not accepted!**")
+
         col1_cc, col2_cc, col3_cc, col4_cc = client_container.columns([2, 1, 1, 1])
 
         with col1_cc:
 
-            prediction = client_prediction(client_id)
-
             figP = go.Figure(
                     go.Indicator(
                         mode = "gauge+number",
-                        value = round(float(list(prediction["probability"].keys())[0]), 3) * 100,
+                        value = prediction_value,
                         domain = {"x": [0, 1], "y": [0, 1]},
                         gauge = {
                             "axis": {"range": [None, 100], "tickwidth": 1, "tickcolor": "darkblue", "tick0": 0, "dtick": 20},
@@ -164,11 +175,20 @@ if result:
                 margin=dict(
                     l=50, r=50, b=0, t=0, pad=0
                 ),
+                annotations=[
+                    go.layout.Annotation(
+                        text=f"<b>Probability that the client will pay his loan</b>",
+                        x=0.5, xanchor="center", xref="paper",
+                        y=0, yanchor="bottom", yref="paper",
+                        showarrow=False,
+                    )
+                ]
             )
             
             col1_cc.plotly_chart(figP, use_container_width=True)
 
         with col2_cc:
+            st.caption("&nbsp;")
             st.markdown("**Client id:**")
             st.caption(data["clientId"])
             st.markdown("**Children:**")
@@ -177,17 +197,21 @@ if result:
             st.caption(data["yearsEmployed"])
 
         with col3_cc:
+            st.caption("&nbsp;")
             st.markdown("**Gender:**")
             st.caption(data["gender"])
             st.markdown("**Own realty:**")
             st.caption(data["ownRealty"])
             st.markdown("**Total income:**")
-            st.caption(data["totalIncome"])
+            total_income = "$ {:,.2f}".format(data["totalIncome"])
+            st.caption(total_income)
 
         with col4_cc:
+            st.caption("&nbsp;")
             st.markdown("**Age:**")
             st.caption(data["age"])
             st.markdown("**Own car:**")
             st.caption(data["ownCar"])
             st.markdown("**Current credit:**")
-            st.caption(data["credit"])
+            current_credit = "$ {:,.2f}".format(data["credit"])
+            st.caption(current_credit)
