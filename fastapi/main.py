@@ -4,7 +4,6 @@ import json
 import pandas as pd
 import numpy as np
 from datetime import date, timedelta
-
 from fastapi import FastAPI, File
 import lightgbm as lgb
 from lightgbm import LGBMClassifier
@@ -18,35 +17,46 @@ app = FastAPI(
 )
 
 
-def read_csv():
+# Reading the csv
+df_clients_to_predict = pd.read_csv("datasets/df_clients_to_predict.csv")
+
+
+def calculate_years(days):
     """
-    Method used to read the csv.
+    Method used to calculate years based on date (today - quantity of days).
 
     Parameters:
     -----------------
-        None
+        days (int): Numbers of day to rest of today
 
     Returns:
     -----------------
-        df (pandas.DataFrame): Dataset readed
-    """    
+        years (int): Numbers of years
+    """
 
-    df = pd.read_csv("datasets/df_customers_to_predict.csv")
+    today = date.today()
+    initial_date = today - timedelta(abs(days))
+    years = today.year - initial_date.year - ((today.month, today.day) < (initial_date.month, initial_date.day))
 
-    return df
+    return years
 
 
 @app.get("/api/clients")
 async def clients_id():
+    """ 
+    EndPoint to get all clients id
+    """
 
-    df = read_csv()
-    clientsId = df["SK_ID_CURR"].tolist()
+    clientsId = df_clients_to_predict["SK_ID_CURR"].tolist()
 
     return {"clientsId": clientsId}
 
 
 @app.get("/api/clients/{id}")
 async def clients(id: int):
+    """ 
+    EndPoint to get client's detail 
+    """ 
 
     # Defining the features to get
     COLUMNS = [
@@ -55,14 +65,11 @@ async def clients(id: int):
         "AMT_INCOME_TOTAL", "AMT_CREDIT"
     ]
 
-    # Reading the dataset
-    df = read_csv()
-
     # Filtering by clients id
-    df = df[COLUMNS][df["SK_ID_CURR"] == id]
+    df_by_id = df_clients_to_predict[COLUMNS][df_clients_to_predict["SK_ID_CURR"] == id]
     
-    for col in df.columns:
-        globals()[col] = df.iloc[0, df.columns.get_loc(col)]
+    for col in df_by_id.columns:
+        globals()[col] = df_by_id.iloc[0, df_by_id.columns.get_loc(col)]
     
     client = {
         "clientId" : int(SK_ID_CURR),
@@ -85,16 +92,13 @@ async def predict(id: int):
     # Loading the model
     model = joblib.load("models/model_p7.pkl")
 
-    # reading the csv
-    df = read_csv()
-
     # Filtering by client id
-    df = df[df["SK_ID_CURR"] == id]
-    df = df.drop(columns=["SK_ID_CURR"])
+    df_prediction_by_id = df_clients_to_predict[df_clients_to_predict["SK_ID_CURR"] == id]
+    df_prediction_by_id = df_prediction_by_id.drop(columns=["SK_ID_CURR"])
 
     # Predicting
-    result = model.predict(df)
-    result_proba = model.predict_proba(df)
+    result = model.predict(df_prediction_by_id)
+    result_proba = model.predict_proba(df_prediction_by_id)
 
     if (int(result[0]) == 0):
          result = "Yes"
@@ -102,23 +106,3 @@ async def predict(id: int):
          result = "No"    
 
     return {"repay" : result, "probability" : result_proba}
-
-
-def calculate_years(days):
-    """
-    Method used to calculate years based on date (today - quantity of days).
-
-    Parameters:
-    -----------------
-        days (int): Numbers of day to rest of today
-
-    Returns:
-    -----------------
-        years (int): Numbers of years
-    """
-
-    today = date.today()
-    initial_date = today - timedelta(abs(days))
-    years = today.year - initial_date.year - ((today.month, today.day) < (initial_date.month, initial_date.day))
-
-    return years
