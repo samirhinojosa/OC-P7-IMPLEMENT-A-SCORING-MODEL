@@ -19,6 +19,7 @@ app = FastAPI(
 
 # Reading the csv
 df_clients_to_predict = pd.read_csv("datasets/df_clients_to_predict.csv")
+df_optimized = pd.read_csv("datasets/df_optimized.csv")
 
 
 def calculate_years(days):
@@ -88,6 +89,9 @@ async def clients(id: int):
 
 @app.get("/api/predictions/clients/{id}")
 async def predict(id: int):
+    """ 
+    EndPoint to get the probability honor/compliance of a client
+    """ 
 
     # Loading the model
     model = joblib.load("models/model_p7.pkl")
@@ -106,3 +110,20 @@ async def predict(id: int):
          result = "No"    
 
     return {"repay" : result, "probability" : result_proba}
+
+
+@app.get("/api/statistics")
+async def statistics():
+    """ 
+    EndPoint to get some statistics
+    """
+
+    df_optimized["AGE"] = df_optimized["DAYS_BIRTH"].apply(lambda x: calculate_years(x))
+
+    ages_data = df_optimized.groupby("AGE").size()
+    ages_data = pd.DataFrame(ages_data).reset_index()
+    ages_data.columns = ["AGE", "AMOUNT"]
+
+    ages_data = ages_data.set_index("AGE").to_dict()["AMOUNT"]
+
+    return ages_data

@@ -113,6 +113,10 @@ page_names = ["🏠 Home", "📉 Client prediction"]
 page = sb.radio("", page_names, index=0)
 sb.write('<style>.css-1p2iens { margin-bottom: 0px !important; min-height: 0 !important;}</style>', unsafe_allow_html=True)
 
+msg_sb = sb.info("In this section, you can **navigate** through the **Home page** where you'll find " \
+                "information related with the project. At the same time, you can go to the **Client prediction page**, " \
+                "where you can make predictions to know whether client will honor on the loan based on his information.")
+
 if page == "🏠 Home":
 
     st.header("This is the header")
@@ -124,27 +128,37 @@ if page == "🏠 Home":
 
 else:
 
-    msg_sb = sb.info("Select a client to **obtain** " \
-                "information related to **probability** of a client **honoring on the loan**")
+    client_selection_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">🔎 Client selection</h3>'
+    st.markdown(client_selection_title, unsafe_allow_html=True)
 
-    sb.markdown("🔎 **Client selection**")
-    client_selection_form = sb.form(key="client_selection")
-    client_id = client_selection_form.selectbox(
-        "Client ID", client()
-    )
+    client_container_selection = st.container()
+    #col1_cs, col2_cs = client_container_selection.columns([1, 2])
+    col1_cs, col2_cs = client_container_selection.columns(2)
+
+    with col1_cs:
+
+        client_selection_form = st.form(key="client_selection")
+        client_id = client_selection_form.selectbox(
+            "Client Id list", client()
+        )
+        
+        result = client_selection_form.form_submit_button(label="Results")
     
-    result = client_selection_form.form_submit_button(label="Results")
+    with col2_cs:
+
+        msg_client_selection = st.info("Select a client to **obtain** " \
+                                "information related to **probability** of a client **honoring on the loan**. " \
+                                "In addition, you can analyze client information against the general data. ")
 
     if result:
     
-
         data = client_details(client_id)
-        client_container = st.container()
+        client_container_prediction = st.container()
 
+        with client_container_prediction:
 
-        with client_container:
-
-            st.subheader("Client's information")
+            client_information_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">📋 Client information</h3>'
+            st.markdown(client_information_title, unsafe_allow_html=True)
 
             prediction = client_prediction(client_id)
             prediction_value = round(float(list(prediction["probability"].keys())[0]), 3) * 100
@@ -157,9 +171,9 @@ else:
                 else:
                     st.error("Based on the client's information, the credit application is ** not accepted!**")
 
-            col1_cc, col2_cc, col3_cc, col4_cc = client_container.columns([2, 1, 1, 1])
+            col1_cp, col2_cp, col3_cp, col4_cp = client_container_prediction.columns([2, 1, 1, 1])
 
-            with col1_cc:
+            with col1_cp:
                 
 
                 config = {
@@ -207,10 +221,10 @@ else:
                     ]
                 )
                 
-                col1_cc.plotly_chart(figP, config=config, use_container_width=True)
+                col1_cp.plotly_chart(figP, config=config, use_container_width=True)
 
                 
-            with col2_cc:
+            with col2_cp:
                 st.caption("&nbsp;")
                 st.markdown("**Client id:**")
                 st.caption(data["clientId"])
@@ -219,7 +233,7 @@ else:
                 st.markdown("**Years employed:**")
                 st.caption(data["yearsEmployed"])
 
-            with col3_cc:
+            with col3_cp:
                 st.caption("&nbsp;")
                 st.markdown("**Gender:**")
                 st.caption(data["gender"])
@@ -229,7 +243,7 @@ else:
                 total_income = "$ {:,.2f}".format(data["totalIncome"])
                 st.caption(total_income)
 
-            with col4_cc:
+            with col4_cp:
                 st.caption("&nbsp;")
                 st.markdown("**Age:**")
                 st.caption(data["age"])
