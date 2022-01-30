@@ -1,6 +1,7 @@
 import io
 import os
 import json 
+import gc
 import pandas as pd
 import numpy as np
 from datetime import date, timedelta
@@ -15,18 +16,6 @@ app = FastAPI(
     description="""Obtain information related to probability of a client defaulting on loan.""",
     version="0.1.0",
 )
-
-
-# Columns to read on CSVs
-COLUMNS = [
-    "SK_ID_CURR", "CODE_GENDER", "DAYS_BIRTH", "DAYS_EMPLOYED",
-    "CNT_CHILDREN", "FLAG_OWN_REALTY", "FLAG_OWN_CAR",
-    "AMT_INCOME_TOTAL", "AMT_CREDIT"
-]
-
-# Reading the csv
-df_clients_to_predict = pd.read_csv("datasets/df_clients_to_predict.csv")
-df_optimized = pd.read_csv("datasets/df_optimized.csv", usecols=COLUMNS, low_memory=True)
 
 
 def calculate_years(days):
@@ -47,6 +36,32 @@ def calculate_years(days):
     years = today.year - initial_date.year - ((today.month, today.day) < (initial_date.month, initial_date.day))
 
     return years
+
+
+# Columns to read on CSVs
+COLUMNS = [
+    "SK_ID_CURR", "CODE_GENDER", "DAYS_BIRTH", "DAYS_EMPLOYED",
+    "CNT_CHILDREN", "FLAG_OWN_REALTY", "FLAG_OWN_CAR",
+    "AMT_INCOME_TOTAL", "AMT_CREDIT"
+]
+COLUMNS_OLD_CLIENTS = [
+    "SK_ID_CURR", "CODE_GENDER", "DAYS_BIRTH", "DAYS_EMPLOYED",
+    "CNT_CHILDREN", "FLAG_OWN_REALTY", "FLAG_OWN_CAR",
+    "AMT_INCOME_TOTAL", "AMT_CREDIT", "TARGET"
+]
+
+# Reading the csv
+df_clients_to_predict = pd.read_csv("datasets/df_clients_to_predict.csv")
+df_optimized = pd.read_csv("datasets/df_optimized.csv", usecols=COLUMNS_OLD_CLIENTS, low_memory=True)
+
+df_optimized["AGE"] = df_optimized["DAYS_BIRTH"].apply(lambda x: calculate_years(x))
+
+df_optimized_by_target_repaid = df_optimized[df_optimized["TARGET"] == 0]
+df_optimized_by_target_not_repaid = df_optimized[df_optimized["TARGET"] == 1]
+
+# Deleting and freeing memory
+del df_optimized
+gc.collect()
 
 
 @app.get("/api/clients")
@@ -118,12 +133,14 @@ async def statistical_age():
     EndPoint to get some statistics
     """
 
-    df_optimized["AGE"] = df_optimized["DAYS_BIRTH"].apply(lambda x: calculate_years(x))
+    ages_data_repaid = df_optimized_by_target_repaid.groupby("AGE").size()
+    ages_data_repaid = pd.DataFrame(ages_data_repaid).reset_index()
+    ages_data_repaid.columns = ["AGE", "AMOUNT"]
+    ages_data_repaid = ages_data_repaid.set_index("AGE").to_dict()["AMOUNT"]
 
-    ages_data = df_optimized.groupby("AGE").size()
-    ages_data = pd.DataFrame(ages_data).reset_index()
-    ages_data.columns = ["AGE", "AMOUNT"]
+    ages_data_not_repaid = df_optimized_by_target_not_repaid.groupby("AGE").size()
+    ages_data_not_repaid = pd.DataFrame(ages_data_not_repaid).reset_index()
+    ages_data_not_repaid.columns = ["AGE", "AMOUNT"]
+    ages_data_not_repaid = ages_data_not_repaid.set_index("AGE").to_dict()["AMOUNT"]
 
-    ages_data = ages_data.set_index("AGE").to_dict()["AMOUNT"]
-
-    return ages_data
+    return {"ages_repaid" : ages_data_repaid, "ages_not_repaid" : ages_data_not_repaid}

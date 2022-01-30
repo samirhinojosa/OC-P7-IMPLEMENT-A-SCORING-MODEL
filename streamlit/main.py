@@ -272,6 +272,12 @@ else:
             client_information_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">📊 General statistics</h3>'
             st.markdown(client_information_title, unsafe_allow_html=True)
 
+            ages = statistical_age()
+            ages_repaid = ages["ages_repaid"]
+            ages_not_repaid = ages["ages_not_repaid"]
+            ages_repaid_list = [int(key) for key, val in ages_repaid.items() for _ in range(val)]
+            ages_not_repaid_list = [int(key) for key, val in ages_not_repaid.items() for _ in range(val)]
+
             col1_gs, col2_gs = container_general_statistics.columns(2)
 
             with col1_gs:
@@ -281,12 +287,11 @@ else:
                                         </h5>'
                 st.markdown(statistical_age_title, unsafe_allow_html=True)
 
-                group_labels = ["Distribution of ages"]
+                group_labels = ["Repaid", "Not repaid"]
 
-                ages_dict = statistical_age()
-                ages_list = [int(key) for key, val in ages_dict.items() for _ in range(val)]
-
-                fig_ages = ff.create_distplot([ages_list], group_labels, show_hist=False, show_rug=False)
+                fig_ages = ff.create_distplot([ages_repaid_list, ages_not_repaid_list], 
+                                            group_labels, show_hist=False, show_rug=False, 
+                                            colors=["Green", "Red"])
                 fig_ages.update_layout(
                     paper_bgcolor="white",
                     font={
@@ -296,18 +301,22 @@ else:
                     width=500,
                     height=360,
                     margin=dict(
-                        l=50, r=50, b=0, t=0, pad=0
+                        l=50, r=50, b=0, t=20, pad=0
                     ),
-                    title_text="Client age vs Current clients XXX",
                     title={
                         "text" : "Client age vs Current clients",
-                        #"y" : 0.9,
-                        #"x" : 0.5,
+                        "y" : 1,
+                        "x" : 0.45,
                         "xanchor" : "center",
                         "yanchor" : "top"
                     },
                     xaxis_title="Ages",
-                    yaxis_title="Density by age",
+                    yaxis_title="Density",
+                    legend={
+                        "traceorder" : "normal"
+                    }
                 )
+                fig_ages.add_vline(x=data["age"], line_width=3,
+                                line_dash="dash", line_color="green", annotation_text="client's age")
 
                 col1_gs.plotly_chart(fig_ages, config=config, use_container_width=True)
