@@ -10,3 +10,9 @@ hyperopt==0.2.5
 lightgbm==3.3.2
 imbalanced-learn==0.8.1
 joblib==1.1.0
+streamlit==1.5.0
+requests==2.27.1
+requests-toolbelt==0.9.1
+Pillow==9.0.0
+plotly==5.5.0
+scipy==1.7.3

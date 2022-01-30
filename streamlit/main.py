@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 from PIL import Image
 import plotly.graph_objects as go
+import plotly.figure_factory as ff
 
 ########################################################
 # Loading images to the website
@@ -48,6 +49,11 @@ hide_menu_style = """
         </style>
         """
 st.markdown(hide_menu_style, unsafe_allow_html=True)
+
+config = {
+    "displayModeBar": False,
+    "displaylogo": False
+}
 
 
 ########################################################
@@ -102,6 +108,16 @@ def client_prediction(id):
     else:
         return "Error"
 
+@st.cache
+def statistical_age():
+    # Getting General statistics about ages
+    response = fetch(session, f"http://fastapi:8008/api/statistics/ages")
+    if response:
+        return response
+    else:
+        return "Error"
+
+
 ########################################################
 # Sidebar section
 ########################################################
@@ -109,7 +125,7 @@ sb = st.sidebar # defining the sidebar
 sb.image(image)
 
 sb.markdown("🛰️ **Navigation**")
-page_names = ["🏠 Home", "📉 Client prediction"]
+page_names = ["🏠 Home", "⚙️ Client prediction"]
 page = sb.radio("", page_names, index=0)
 sb.write('<style>.css-1p2iens { margin-bottom: 0px !important; min-height: 0 !important;}</style>', unsafe_allow_html=True)
 
@@ -133,7 +149,7 @@ else:
 
     client_container_selection = st.container()
     #col1_cs, col2_cs = client_container_selection.columns([1, 2])
-    col1_cs, col2_cs = client_container_selection.columns(2)
+    col1_cs, col2_cs, col3_cs = client_container_selection.columns([1, 1, 2])
 
     with col1_cs:
 
@@ -150,10 +166,14 @@ else:
                                 "information related to **probability** of a client **honoring on the loan**. " \
                                 "In addition, you can analyze client information against the general data. ")
 
+    with col3_cs:
+
+        st.text(" ")
+
     if result:
     
         data = client_details(client_id)
-        client_container_prediction = st.container()
+        client_container_prediction, container_general_statistics = (st.container() for i in range(2))
 
         with client_container_prediction:
 
@@ -175,12 +195,6 @@ else:
 
             with col1_cp:
                 
-
-                config = {
-                    "displayModeBar": False,
-                    "displaylogo": False
-                }
-
                 figP = go.Figure(
                         go.Indicator(
                             mode = "gauge+number",
@@ -252,3 +266,48 @@ else:
                 st.markdown("**Current credit:**")
                 current_credit = "$ {:,.2f}".format(data["credit"])
                 st.caption(current_credit)
+
+        with container_general_statistics:
+
+            client_information_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">📊 General statistics</h3>'
+            st.markdown(client_information_title, unsafe_allow_html=True)
+
+            col1_gs, col2_gs = container_general_statistics.columns(2)
+
+            with col1_gs:
+
+                statistical_age_title = '<h5 style="text-align:center; color:DarkBlue; margin-bottom:0; padding: 0.5rem 0px 1rem;">\
+                                            Client age vs Current clients YY\
+                                        </h5>'
+                st.markdown(statistical_age_title, unsafe_allow_html=True)
+
+                group_labels = ["Distribution of ages"]
+
+                ages_dict = statistical_age()
+                ages_list = [int(key) for key, val in ages_dict.items() for _ in range(val)]
+
+                fig_ages = ff.create_distplot([ages_list], group_labels, show_hist=False, show_rug=False)
+                fig_ages.update_layout(
+                    paper_bgcolor="white",
+                    font={
+                        "family": "sans serif"
+                    },
+                    autosize=False,
+                    width=500,
+                    height=360,
+                    margin=dict(
+                        l=50, r=50, b=0, t=0, pad=0
+                    ),
+                    title_text="Client age vs Current clients XXX",
+                    title={
+                        "text" : "Client age vs Current clients",
+                        #"y" : 0.9,
+                        #"x" : 0.5,
+                        "xanchor" : "center",
+                        "yanchor" : "top"
+                    },
+                    xaxis_title="Ages",
+                    yaxis_title="Density by age",
+                )
+
+                col1_gs.plotly_chart(fig_ages, config=config, use_container_width=True)

@@ -17,9 +17,16 @@ app = FastAPI(
 )
 
 
+# Columns to read on CSVs
+COLUMNS = [
+    "SK_ID_CURR", "CODE_GENDER", "DAYS_BIRTH", "DAYS_EMPLOYED",
+    "CNT_CHILDREN", "FLAG_OWN_REALTY", "FLAG_OWN_CAR",
+    "AMT_INCOME_TOTAL", "AMT_CREDIT"
+]
+
 # Reading the csv
 df_clients_to_predict = pd.read_csv("datasets/df_clients_to_predict.csv")
-df_optimized = pd.read_csv("datasets/df_optimized.csv")
+df_optimized = pd.read_csv("datasets/df_optimized.csv", usecols=COLUMNS, low_memory=True)
 
 
 def calculate_years(days):
@@ -58,14 +65,7 @@ async def clients(id: int):
     """ 
     EndPoint to get client's detail 
     """ 
-
-    # Defining the features to get
-    COLUMNS = [
-        "SK_ID_CURR", "CODE_GENDER", "DAYS_BIRTH", "DAYS_EMPLOYED",
-        "CNT_CHILDREN", "FLAG_OWN_REALTY", "FLAG_OWN_CAR",
-        "AMT_INCOME_TOTAL", "AMT_CREDIT"
-    ]
-
+    
     # Filtering by clients id
     df_by_id = df_clients_to_predict[COLUMNS][df_clients_to_predict["SK_ID_CURR"] == id]
     
@@ -112,8 +112,8 @@ async def predict(id: int):
     return {"repay" : result, "probability" : result_proba}
 
 
-@app.get("/api/statistics")
-async def statistics():
+@app.get("/api/statistics/ages")
+async def statistical_age():
     """ 
     EndPoint to get some statistics
     """
