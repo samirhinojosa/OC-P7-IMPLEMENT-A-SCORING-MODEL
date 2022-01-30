@@ -272,7 +272,7 @@ else:
             client_information_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">📊 General statistics</h3>'
             st.markdown(client_information_title, unsafe_allow_html=True)
 
-            st.info("Below, you can see some general statistics about clients who" \
+            st.info("Below, you can see some general statistics about clients who " \
                     "repaid and do not repaid the loan")
             
             ages = statistical_age()
