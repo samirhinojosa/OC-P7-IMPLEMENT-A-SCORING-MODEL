@@ -204,7 +204,7 @@ else:
                 if prediction_value > 50:
                     st.warning("It is necessary to **analyze more in details** the client's information to accept the credit")
                 else:
-                    st.error("Based on the client's information, the credit application is ** not accepted!**")
+                    st.error("Based on the client's information, the credit application is **not accepted!**")
 
             col1_cp, col2_cp, col3_cp, col4_cp = client_container_prediction.columns([2, 1, 1, 1])
 
