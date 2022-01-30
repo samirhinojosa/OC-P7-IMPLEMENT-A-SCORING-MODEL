@@ -109,9 +109,18 @@ def client_prediction(id):
         return "Error"
 
 @st.cache
-def statistical_age():
+def statistical_ages():
     # Getting General statistics about ages
     response = fetch(session, f"http://fastapi:8008/api/statistics/ages")
+    if response:
+        return response
+    else:
+        return "Error"
+
+@st.cache
+def statistical_years_employed():
+    # Getting General statistics about ages
+    response = fetch(session, f"http://fastapi:8008/api/statistics/yearsEmployed")
     if response:
         return response
     else:
@@ -275,21 +284,24 @@ else:
             st.info("Below, you can see some general statistics about clients who " \
                     "repaid and do not repaid the loan")
             
-            ages = statistical_age()
-            ages_repaid = ages["ages_repaid"]
-            ages_not_repaid = ages["ages_not_repaid"]
-            ages_repaid_list = [int(key) for key, val in ages_repaid.items() for _ in range(val)]
-            ages_not_repaid_list = [int(key) for key, val in ages_not_repaid.items() for _ in range(val)]
+
 
             col1_gs, col2_gs = container_general_statistics.columns(2)
 
+            group_labels = ["Repaid", "Not repaid"]
+            colors=["Green", "Red"]
+
             with col1_gs:
 
-                group_labels = ["Repaid", "Not repaid"]
+                ages = statistical_ages()
+                ages_repaid = ages["ages_repaid"]
+                ages_not_repaid = ages["ages_not_repaid"]
+                ages_repaid_list = [int(key) for key, val in ages_repaid.items() for _ in range(val)]
+                ages_not_repaid_list = [int(key) for key, val in ages_not_repaid.items() for _ in range(val)]
 
                 fig_ages = ff.create_distplot([ages_repaid_list, ages_not_repaid_list], 
                                             group_labels, show_hist=False, show_rug=False, 
-                                            colors=["Green", "Red"])
+                                            colors=colors)
                 fig_ages.update_layout(
                     paper_bgcolor="white",
                     font={
@@ -302,7 +314,7 @@ else:
                         l=50, r=50, b=0, t=20, pad=0
                     ),
                     title={
-                        "text" : "Client age vs Current clients",
+                        "text" : "Client's age vs Current clients",
                         "y" : 1,
                         "x" : 0.45,
                         "xanchor" : "center",
@@ -315,6 +327,46 @@ else:
                     }
                 )
                 fig_ages.add_vline(x=data["age"], line_width=3,
-                                line_dash="dash", line_color="green", annotation_text="client's age")
+                                line_dash="dash", line_color="green", annotation_text="Client's age")
 
                 col1_gs.plotly_chart(fig_ages, config=config, use_container_width=True)
+
+            
+            with col2_gs:
+                
+                years_employed = statistical_years_employed()
+                years_employed_repaid = ages["years_employed_repaid"]
+                years_employed_not_repaid = ages["years_employed_not_repaid"]
+                years_employed_repaid_list = [int(key) for key, val in years_employed_repaid.items() for _ in range(val)]
+                years_employed_not_repaid_list = [int(key) for key, val in years_employed_not_repaid.items() for _ in range(val)]
+
+                fig_years_worked = ff.create_distplot([years_employed_repaid_list, years_employed_not_repaid_list], 
+                                            group_labels, show_hist=False, show_rug=False, 
+                                            colors=colors)
+
+                fig_years_worked.update_layout(
+                    paper_bgcolor="white",
+                    font={
+                        "family": "sans serif"
+                    },
+                    autosize=False,
+                    width=500,
+                    height=360,
+                    margin=dict(
+                        l=50, r=50, b=0, t=20, pad=0
+                    ),
+                    title={
+                        "text" : "Years employed by the client vs Current clients",
+                        "y" : 1,
+                        "x" : 0.45,
+                        "xanchor" : "center",
+                        "yanchor" : "top"
+                    },
+                    xaxis_title="Ages",
+                    yaxis_title="Density",
+                    legend={
+                        "traceorder" : "normal"
+                    }
+                )
+                fig_ages.add_vline(x=data["yearsEmployed"], line_width=3,
+                                line_dash="dash", line_color="green", annotation_text="Years employed by the client")

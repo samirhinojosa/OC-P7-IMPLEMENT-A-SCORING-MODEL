@@ -44,17 +44,13 @@ COLUMNS = [
     "CNT_CHILDREN", "FLAG_OWN_REALTY", "FLAG_OWN_CAR",
     "AMT_INCOME_TOTAL", "AMT_CREDIT"
 ]
-COLUMNS_OLD_CLIENTS = [
-    "SK_ID_CURR", "CODE_GENDER", "DAYS_BIRTH", "DAYS_EMPLOYED",
-    "CNT_CHILDREN", "FLAG_OWN_REALTY", "FLAG_OWN_CAR",
-    "AMT_INCOME_TOTAL", "AMT_CREDIT", "TARGET"
-]
 
 # Reading the csv
 df_clients_to_predict = pd.read_csv("datasets/df_clients_to_predict.csv")
-df_optimized = pd.read_csv("datasets/df_optimized.csv", usecols=COLUMNS_OLD_CLIENTS, low_memory=True)
+df_optimized = pd.read_csv("datasets/df_optimized_and_reduced.csv")
 
 df_optimized["AGE"] = df_optimized["DAYS_BIRTH"].apply(lambda x: calculate_years(x))
+df_optimized["YEARS_EMPLOYED"] = df_optimized["DAYS_EMPLOYED"].apply(lambda x: calculate_years(x))
 
 df_optimized_by_target_repaid = df_optimized[df_optimized["TARGET"] == 0]
 df_optimized_by_target_not_repaid = df_optimized[df_optimized["TARGET"] == 1]
@@ -130,7 +126,7 @@ async def predict(id: int):
 @app.get("/api/statistics/ages")
 async def statistical_age():
     """ 
-    EndPoint to get some statistics
+    EndPoint to get some statistics - ages
     """
 
     ages_data_repaid = df_optimized_by_target_repaid.groupby("AGE").size()
@@ -144,3 +140,22 @@ async def statistical_age():
     ages_data_not_repaid = ages_data_not_repaid.set_index("AGE").to_dict()["AMOUNT"]
 
     return {"ages_repaid" : ages_data_repaid, "ages_not_repaid" : ages_data_not_repaid}
+
+
+@app.get("/api/statistics/yearsEmployed")
+async def statistical_years_employed():
+    """ 
+    EndPoint to get some statistics - years employed
+    """
+
+    years_employed_data_repaid = df_optimized_by_target_repaid.groupby("YEARS_EMPLOYED").size()
+    years_employed_data_repaid = pd.DataFrame(years_employed_data_repaid).reset_index()
+    years_employed_data_repaid.columns = ["YEARS_EMPLOYED", "AMOUNT"]
+    years_employed_data_repaid = years_employed_data_repaid.set_index("YEARS_EMPLOYED").to_dict()["AMOUNT"]
+
+    years_employed_data_not_repaid = df_optimized_by_target_not_repaid.groupby("YEARS_EMPLOYED").size()
+    years_employed_data_not_repaid = pd.DataFrame(years_employed_data_not_repaid).reset_index()
+    years_employed_data_not_repaid.columns = ["YEARS_EMPLOYED", "AMOUNT"]
+    years_employed_data_not_repaid = years_employed_data_not_repaid.set_index("YEARS_EMPLOYED").to_dict()["AMOUNT"]
+
+    return {"years_employed_repaid" : years_employed_data_repaid, "years_employed_not_repaid" : years_employed_data_not_repaid}
