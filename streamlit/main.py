@@ -272,6 +272,9 @@ else:
             client_information_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">📊 General statistics</h3>'
             st.markdown(client_information_title, unsafe_allow_html=True)
 
+            st.info("Below, you can see some general statistics about clients who" \
+                    "repaid and do not repaid the loan")
+            
             ages = statistical_age()
             ages_repaid = ages["ages_repaid"]
             ages_not_repaid = ages["ages_not_repaid"]
@@ -281,11 +284,6 @@ else:
             col1_gs, col2_gs = container_general_statistics.columns(2)
 
             with col1_gs:
-
-                statistical_age_title = '<h5 style="text-align:center; color:DarkBlue; margin-bottom:0; padding: 0.5rem 0px 1rem;">\
-                                            Client age vs Current clients YY\
-                                        </h5>'
-                st.markdown(statistical_age_title, unsafe_allow_html=True)
 
                 group_labels = ["Repaid", "Not repaid"]
 
