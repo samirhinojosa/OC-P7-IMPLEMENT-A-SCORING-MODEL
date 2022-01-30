@@ -335,8 +335,8 @@ else:
             with col2_gs:
                 
                 years_employed = statistical_years_employed()
-                years_employed_repaid = ages["years_employed_repaid"]
-                years_employed_not_repaid = ages["years_employed_not_repaid"]
+                years_employed_repaid = years_employed["years_employed_repaid"]
+                years_employed_not_repaid = years_employed["years_employed_not_repaid"]
                 years_employed_repaid_list = [int(key) for key, val in years_employed_repaid.items() for _ in range(val)]
                 years_employed_not_repaid_list = [int(key) for key, val in years_employed_not_repaid.items() for _ in range(val)]
 
@@ -368,5 +368,7 @@ else:
                         "traceorder" : "normal"
                     }
                 )
-                fig_ages.add_vline(x=data["yearsEmployed"], line_width=3,
+                fig_years_worked.add_vline(x=data["yearsEmployed"], line_width=3,
                                 line_dash="dash", line_color="green", annotation_text="Years employed by the client")
+
+                col2_gs.plotly_chart(fig_years_worked, config=config, use_container_width=True)
