@@ -35,6 +35,12 @@ st.set_page_config(
 
 padding = 0
 st.markdown(f""" <style>
+    .block-container.css-18e3th9.egzxvld2{{
+            padding: 20px 60px;
+    }}
+    .css-4yfn50.e1fqkh3o1{{
+            padding: 4rem 1rem;
+    }}
     .reportview-container .main .block-container{{
         padding-top: {padding}rem;
         padding-right: {padding}rem;
@@ -158,7 +164,7 @@ else:
 
     client_container_selection = st.container()
     #col1_cs, col2_cs = client_container_selection.columns([1, 2])
-    col1_cs, col2_cs, col3_cs = client_container_selection.columns([1, 1, 2])
+    col1_cs, col2_cs, col3_cs = client_container_selection.columns([1, 2, 1])
 
     with col1_cs:
 
@@ -236,7 +242,7 @@ else:
                     ),
                     annotations=[
                         go.layout.Annotation(
-                            text=f"<b>Probability that the client will pay his loan</b>",
+                            text=f"<b>Probability that the client will pay the loan</b>",
                             x=0.5, xanchor="center", xref="paper",
                             y=0, yanchor="bottom", yref="paper",
                             showarrow=False,
@@ -283,8 +289,6 @@ else:
 
             st.info("Below, you can see some general statistics about clients who " \
                     "repaid and do not repaid the loan")
-            
-
 
             col1_gs, col2_gs = container_general_statistics.columns(2)
 
@@ -292,6 +296,8 @@ else:
             colors=["Green", "Red"]
 
             with col1_gs:
+
+                st.caption("&nbsp;")
 
                 ages = statistical_ages()
                 ages_repaid = ages["ages_repaid"]
@@ -333,6 +339,8 @@ else:
 
             
             with col2_gs:
+
+                st.caption("&nbsp;")
                 
                 years_employed = statistical_years_employed()
                 years_employed_repaid = years_employed["years_employed_repaid"]
@@ -362,8 +370,8 @@ else:
                         "xanchor" : "center",
                         "yanchor" : "top"
                     },
-                    xaxis_title="Ages",
-                    yaxis_title="Density",
+                    xaxis_title="Years employed",
+                    yaxis_title="",
                     legend={
                         "traceorder" : "normal"
                     }
