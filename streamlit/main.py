@@ -1,14 +1,23 @@
 import streamlit as st
 import requests
 from PIL import Image
+import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
+import pandas as pd
 
 ########################################################
 # Loading images to the website
 ########################################################
 icon = Image.open("images/favicon.ico")
 image = Image.open("images/home-credit.png")
+
+
+########################################################
+# Loading dataset
+########################################################
+df_current_clients = pd.read_csv("datasets/df_current_clients_reduced.csv",
+                        usecols = ["AMT_INCOME_TOTAL", "TARGET"], low_memory=True)
 
 
 ########################################################
@@ -127,6 +136,15 @@ def statistical_ages():
 def statistical_years_employed():
     # Getting General statistics about ages
     response = fetch(session, f"http://fastapi:8008/api/statistics/yearsEmployed")
+    if response:
+        return response
+    else:
+        return "Error"
+
+@st.cache
+def statistical_amt_credit():
+    # Getting General statistics amt credits
+    response = fetch(session, f"http://fastapi:8008/api/statistics/amtCredits")
     if response:
         return response
     else:
@@ -268,7 +286,7 @@ else:
                 st.caption(data["gender"])
                 st.markdown("**Own realty:**")
                 st.caption(data["ownRealty"])
-                st.markdown("**Total income:**")
+                st.markdown("**Anual income:**")
                 total_income = "$ {:,.2f}".format(data["totalIncome"])
                 st.caption(total_income)
 
@@ -278,7 +296,7 @@ else:
                 st.caption(data["age"])
                 st.markdown("**Own car:**")
                 st.caption(data["ownCar"])
-                st.markdown("**Current credit:**")
+                st.markdown("**AMT credit:**")
                 current_credit = "$ {:,.2f}".format(data["credit"])
                 st.caption(current_credit)
 
@@ -296,6 +314,10 @@ else:
             colors=["Green", "Red"]
 
             with col1_gs:
+
+                ########################################################
+                # statistical Ages
+                ########################################################
 
                 st.caption("&nbsp;")
 
@@ -330,15 +352,64 @@ else:
                     yaxis_title="Density",
                     legend={
                         "traceorder" : "normal"
-                    }
+                    },
+                    showlegend=False
                 )
                 fig_ages.add_vline(x=data["age"], line_width=3,
                                 line_dash="dash", line_color="blue", annotation_text="Client's age")
 
                 col1_gs.plotly_chart(fig_ages, config=config, use_container_width=True)
 
-            
+                ########################################################
+                # Statistical AMT Credit
+                ########################################################
+
+                st.caption("&nbsp;")
+
+                amt_credit = statistical_amt_credit()
+                amt_credit_repaid = amt_credit["amt_credit_repaid"]
+                amt_credit_not_repaid = amt_credit["amt_credit_not_repaid"]
+                amt_credit_repaid_list = [float(key) for key, val in amt_credit_repaid.items() for _ in range(val)]
+                amt_credit_not_repaid_list = [float(key) for key, val in amt_credit_not_repaid.items() for _ in range(val)]
+
+                fig_amt_credit = ff.create_distplot([amt_credit_repaid_list, amt_credit_not_repaid_list], 
+                                            group_labels, show_hist=False, show_rug=False, 
+                                            colors=colors)
+
+                fig_amt_credit.update_layout(
+                    paper_bgcolor="white",
+                    font={
+                        "family": "sans serif"
+                    },
+                    autosize=False,
+                    width=500,
+                    height=360,
+                    margin=dict(
+                        l=50, r=50, b=0, t=20, pad=0
+                    ),
+                    title={
+                        "text" : "Client's AMT credit vs Current clients",
+                        "y" : 1,
+                        "x" : 0.45,
+                        "xanchor" : "center",
+                        "yanchor" : "top"
+                    },
+                    xaxis_title="AMT Credit",
+                    yaxis_title="Density",
+                    legend={
+                        "traceorder" : "normal"
+                    }
+                )
+                fig_amt_credit.add_vline(x=data["credit"], line_width=3,
+                                line_dash="dash", line_color="blue", annotation_text="Client's AMT credit")
+
+                col1_gs.plotly_chart(fig_amt_credit, config=config, use_container_width=True)
+                           
             with col2_gs:
+
+                ########################################################
+                # statistical Years Employed
+                ########################################################
 
                 st.caption("&nbsp;")
                 
@@ -380,3 +451,40 @@ else:
                                 line_dash="dash", line_color="blue", annotation_text="Years employed by the client")
 
                 col2_gs.plotly_chart(fig_years_worked, config=config, use_container_width=True)
+
+                ########################################################
+                # Statistical AMT Income
+                ########################################################
+            
+                st.caption("&nbsp;")
+
+                fig_income = px.histogram(df_current_clients, x="AMT_INCOME_TOTAL", color="TARGET", 
+                          color_discrete_map={0:"Green", 1:"Red"}, labels={0:"Green", 1:"Red"})
+
+                fig_income.update_layout(
+                    paper_bgcolor="white",
+                    font={
+                        "family": "sans serif"
+                    },
+                    autosize=False,
+                    width=500,
+                    height=360,
+                    margin=dict(
+                        l=50, r=50, b=0, t=20, pad=0
+                    ),
+                    title={
+                        "text" : "Client's Income vs Current clients",
+                        "y" : 1,
+                        "x" : 0.45,
+                        "xanchor" : "center",
+                        "yanchor" : "top"
+                    },
+                    xaxis_title="Income",
+                    legend_title_text= "",
+                    showlegend=False,
+                    xaxis_range=[25000, 300000]
+                )
+                fig_income.add_vline(x=data["totalIncome"], line_width=3,
+                                line_dash="dash", line_color="blue", annotation_text="Client's age")
+
+                col2_gs.plotly_chart(fig_income, config=config, use_container_width=True)
