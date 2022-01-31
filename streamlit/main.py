@@ -333,7 +333,7 @@ else:
                     }
                 )
                 fig_ages.add_vline(x=data["age"], line_width=3,
-                                line_dash="dash", line_color="green", annotation_text="Client's age")
+                                line_dash="dash", line_color="blue", annotation_text="Client's age")
 
                 col1_gs.plotly_chart(fig_ages, config=config, use_container_width=True)
 
@@ -377,6 +377,6 @@ else:
                     }
                 )
                 fig_years_worked.add_vline(x=data["yearsEmployed"], line_width=3,
-                                line_dash="dash", line_color="green", annotation_text="Years employed by the client")
+                                line_dash="dash", line_color="blue", annotation_text="Years employed by the client")
 
                 col2_gs.plotly_chart(fig_years_worked, config=config, use_container_width=True)

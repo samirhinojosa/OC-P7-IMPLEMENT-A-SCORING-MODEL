@@ -46,7 +46,7 @@ COLUMNS = [
 ]
 
 # Reading the csv
-df_clients_to_predict = pd.read_csv("datasets/df_clients_to_predict.csv")
+df_clients_to_predict = pd.read_csv("datasets/df_clients_reduced_to_predict.csv")
 df_optimized = pd.read_csv("datasets/df_optimized_and_reduced.csv")
 
 df_optimized["AGE"] = df_optimized["DAYS_BIRTH"].apply(lambda x: calculate_years(x))
