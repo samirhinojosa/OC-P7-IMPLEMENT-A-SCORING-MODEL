@@ -164,11 +164,23 @@ sb.write('<style>.css-1p2iens { margin-bottom: 0px !important; min-height: 0 !im
 
 msg_sb = sb.info("In this section, you can **navigate** through the **Home page** where you'll find " \
                 "information related with the project. At the same time, you can go to the **Client prediction page**, " \
-                "where you can make predictions to know whether client will honor on the loan based on his information.")
+                "where you can make predictions to know whether client will pay the loan based on his information.")
 
 if page == "🏠 Home":
 
-    st.header("This is the header")
+    st.subheader("Project 7 - Implement a scoring model")
+    st.markdown("This project is part of [OpenClassRooms Data Scientist training](https://openclassrooms.com/fr/paths/164-data-scientist)"\
+                " and has two main objectives:")
+
+    objectives_list = '<ul style="list-style-type:disc;">'\
+                        '<li>Building a scoring model that will give a prediction about the probability of a client paying the loan.<br>'\
+                        'The mision will be treated as a <strong>binary classification problem</strong>.<br>So, 0 will be the class who repaid/pay '\
+                        'the loan and 1 will be the class who did not repay/pay the loan.</li>'\
+                        '<li>Build an interactive <strong>dashboard for customer relationship managers</strong> to interpret the predictions made by the model,<br>'\
+                        'and improve customer knowledge of customer relationship loaders.</li>'
+    st.markdown(objectives_list, unsafe_allow_html=True)
+    
+    
     st.subheader("This is the subheader")
     st.text("Esto es una prueba.")
     st.caption("This is a string that explains something above.")
@@ -181,7 +193,6 @@ else:
     st.markdown(client_selection_title, unsafe_allow_html=True)
 
     client_container_selection = st.container()
-    #col1_cs, col2_cs = client_container_selection.columns([1, 2])
     col1_cs, col2_cs, col3_cs = client_container_selection.columns([1, 2, 1])
 
     with col1_cs:
@@ -196,7 +207,7 @@ else:
     with col2_cs:
 
         msg_client_selection = st.info("Select a client to **obtain** " \
-                                "information related to **probability** of a client **honoring on the loan**. " \
+                                "information related to **probability** of a client **honoring on the loan**.\n " \
                                 "In addition, you can analyze client information against the general data. ")
 
     with col3_cs:
