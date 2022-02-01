@@ -42,13 +42,25 @@ st.set_page_config(
     }
 )
 
+
+########################################################
+# General styles
+########################################################
 padding = 0
 st.markdown(f""" <style>
     .block-container.css-18e3th9.egzxvld2{{
             padding: 20px 60px;
     }}
+    .css-v3ay09.edgvbvh1{{
+        margin-right: 0;
+        margin-left: auto;
+        display: block;
+    }}
     .css-4yfn50.e1fqkh3o1{{
             padding: 4rem 1rem;
+    }}
+    #data, #repository{{
+        padding: 0px;
     }}
     .reportview-container .main .block-container{{
         padding-top: {padding}rem;
@@ -186,9 +198,6 @@ if page == "🏠 Home":
     st.markdown(how_to_use_text, unsafe_allow_html=True)
 
     st.subheader("Other information")
-    #st_title_data = '<h4>Data</h4>'
-    #st.markdown(st_title_data, unsafe_allow_html=True)
-
     other_text = '<ul style="list-style-type:disc;">'\
                     '<li><h4>Data</h4>'\
                     'The data used to develop this project are based on the <a href="https://www.kaggle.com/" target="_blank">Kaggle\'s</a> competition: '\
@@ -203,34 +212,39 @@ else:
     client_selection_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">🔎 Client selection</h3>'
     st.markdown(client_selection_title, unsafe_allow_html=True)
 
+    st.info("Select a client to **obtain** information related to **probability** of a client " \
+            "**paying the loan**.\nIn addition, you can analyze some stats.")
+
     client_container_selection = st.container()
     col1_cs, col2_cs, col3_cs = client_container_selection.columns([1, 2, 1])
 
     with col1_cs:
 
-        client_selection_form = st.form(key="client_selection")
-        client_id = client_selection_form.selectbox(
+        client_id = st.selectbox(
             "Client Id list", client()
         )
-        
-        result = client_selection_form.form_submit_button(label="Results")
-    
+        see_stats = st.checkbox("See stats")
+
+        result = st.button(label="Predict")
+
     with col2_cs:
 
-        msg_client_selection = st.info("Select a client to **obtain** " \
-                                "information related to **probability** of a client **paying the loan**. " \
-                                "In addition, you can analyze client information against the general data. ")
+        st.caption("&nbsp;")
+        st.caption("&nbsp;")
+
+        if see_stats:
+            st.warning("**See stats** will take more time. Are you sure ?")
 
     with col3_cs:
 
-        st.text(" ")
+        st.caption("&nbsp;")
 
     if result:
     
         data = client_details(client_id)
-        client_container_prediction, container_general_statistics = (st.container() for i in range(2))
+        ccp, cgs1, cgs2 = (st.container() for i in range(3))
 
-        with client_container_prediction:
+        with ccp:
 
             client_information_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">📋 Client information</h3>'
             st.markdown(client_information_title, unsafe_allow_html=True)
@@ -246,7 +260,7 @@ else:
                 else:
                     st.error("Based on the client's information, the credit application is **not accepted!**")
 
-            col1_cp, col2_cp, col3_cp, col4_cp = client_container_prediction.columns([2, 1, 1, 1])
+            col1_cp, col2_cp, col3_cp, col4_cp = ccp.columns([2, 1, 1, 1])
 
             with col1_cp:
                 
@@ -260,9 +274,8 @@ else:
                                 "bar": {"color": "LawnGreen"},
                                 "bgcolor": "white",
                                 "steps": [
-                                    {"range": [0, 35], "color": "Red"},
-                                    {"range": [35, 65], "color": "Orange"},
-                                    {"range": [65, 100], "color": "Green"}
+                                    {"range": [0, 60], "color": "Red"},
+                                    {"range": [60, 100], "color": "Green"}
                                 ],
                             }
                         )   
@@ -322,191 +335,198 @@ else:
                 current_credit = "$ {:,.2f}".format(data["credit"])
                 st.caption(current_credit)
 
-        with container_general_statistics:
+        if see_stats:
 
-            client_information_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">📊 General statistics</h3>'
-            st.markdown(client_information_title, unsafe_allow_html=True)
-
-            st.info("Below, you can see some general statistics about clients who " \
-                    "repaid and do not repaid the loan")
-
-            col1_gs, col2_gs = container_general_statistics.columns(2)
-
+            # Defining variables to use in graphs
             group_labels = ["Repaid", "Not repaid"]
             colors=["Green", "Red"]
 
-            with col1_gs:
+            with cgs1:
 
-                ########################################################
-                # statistical Ages
-                ########################################################
+                client_information_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">📊 General statistics</h3>'
+                st.markdown(client_information_title, unsafe_allow_html=True)
 
-                st.caption("&nbsp;")
+                st.info("Below, you can see some general statistics about clients who " \
+                        "repaid and do not repaid the loan")
 
-                ages = statistical_ages()
-                ages_repaid = ages["ages_repaid"]
-                ages_not_repaid = ages["ages_not_repaid"]
-                ages_repaid_list = [int(key) for key, val in ages_repaid.items() for _ in range(val)]
-                ages_not_repaid_list = [int(key) for key, val in ages_not_repaid.items() for _ in range(val)]
+                col1_gs_1, col2_gs_1 = cgs1.columns(2)
 
-                fig_ages = ff.create_distplot([ages_repaid_list, ages_not_repaid_list], 
-                                            group_labels, show_hist=False, show_rug=False, 
-                                            colors=colors)
-                fig_ages.update_layout(
-                    paper_bgcolor="white",
-                    font={
-                        "family": "sans serif"
-                    },
-                    autosize=False,
-                    width=500,
-                    height=360,
-                    margin=dict(
-                        l=50, r=50, b=0, t=20, pad=0
-                    ),
-                    title={
-                        "text" : "Client's age vs Current clients",
-                        "y" : 1,
-                        "x" : 0.45,
-                        "xanchor" : "center",
-                        "yanchor" : "top"
-                    },
-                    xaxis_title="Ages",
-                    yaxis_title="Density",
-                    legend={
-                        "traceorder" : "normal"
-                    },
-                    showlegend=False
-                )
-                fig_ages.add_vline(x=data["age"], line_width=3,
-                                line_dash="dash", line_color="blue", annotation_text="Client's age")
+                with col1_gs_1:
 
-                col1_gs.plotly_chart(fig_ages, config=config, use_container_width=True)
+                    ########################################################
+                    # statistical Ages
+                    ########################################################
 
-                ########################################################
-                # Statistical AMT Credit
-                ########################################################
+                    st.caption("&nbsp;")
 
-                st.caption("&nbsp;")
+                    ages = statistical_ages()
+                    ages_repaid = ages["ages_repaid"]
+                    ages_not_repaid = ages["ages_not_repaid"]
+                    ages_repaid_list = [int(key) for key, val in ages_repaid.items() for _ in range(val)]
+                    ages_not_repaid_list = [int(key) for key, val in ages_not_repaid.items() for _ in range(val)]
 
-                amt_credit = statistical_amt_credit()
-                amt_credit_repaid = amt_credit["amt_credit_repaid"]
-                amt_credit_not_repaid = amt_credit["amt_credit_not_repaid"]
-                amt_credit_repaid_list = [float(key) for key, val in amt_credit_repaid.items() for _ in range(val)]
-                amt_credit_not_repaid_list = [float(key) for key, val in amt_credit_not_repaid.items() for _ in range(val)]
+                    fig_ages = ff.create_distplot([ages_repaid_list, ages_not_repaid_list], 
+                                                group_labels, show_hist=False, show_rug=False, 
+                                                colors=colors)
+                    fig_ages.update_layout(
+                        paper_bgcolor="white",
+                        font={
+                            "family": "sans serif"
+                        },
+                        autosize=False,
+                        width=500,
+                        height=360,
+                        margin=dict(
+                            l=50, r=50, b=0, t=20, pad=0
+                        ),
+                        title={
+                            "text" : "Client's age vs Current clients",
+                            "y" : 1,
+                            "x" : 0.45,
+                            "xanchor" : "center",
+                            "yanchor" : "top"
+                        },
+                        xaxis_title="Ages",
+                        yaxis_title="Density",
+                        legend={
+                            "traceorder" : "normal"
+                        }
+                    )
+                    fig_ages.add_vline(x=data["age"], line_width=3,
+                                    line_dash="dash", line_color="blue", annotation_text="Client's age")
 
-                fig_amt_credit = ff.create_distplot([amt_credit_repaid_list, amt_credit_not_repaid_list], 
-                                            group_labels, show_hist=False, show_rug=False, 
-                                            colors=colors)
+                    col1_gs_1.plotly_chart(fig_ages, config=config, use_container_width=True)
 
-                fig_amt_credit.update_layout(
-                    paper_bgcolor="white",
-                    font={
-                        "family": "sans serif"
-                    },
-                    autosize=False,
-                    width=500,
-                    height=360,
-                    margin=dict(
-                        l=50, r=50, b=0, t=20, pad=0
-                    ),
-                    title={
-                        "text" : "Client's AMT credit vs Current clients",
-                        "y" : 1,
-                        "x" : 0.45,
-                        "xanchor" : "center",
-                        "yanchor" : "top"
-                    },
-                    xaxis_title="AMT Credit",
-                    yaxis_title="Density",
-                    legend={
-                        "traceorder" : "normal"
-                    }
-                )
-                fig_amt_credit.add_vline(x=data["credit"], line_width=3,
-                                line_dash="dash", line_color="blue", annotation_text="Client's AMT credit")
+                with col2_gs_1:
 
-                col1_gs.plotly_chart(fig_amt_credit, config=config, use_container_width=True)
-                           
-            with col2_gs:
+                    ########################################################
+                    # statistical Years Employed
+                    ########################################################
 
-                ########################################################
-                # statistical Years Employed
-                ########################################################
+                    st.caption("&nbsp;")
+                    
+                    years_employed = statistical_years_employed()
+                    years_employed_repaid = years_employed["years_employed_repaid"]
+                    years_employed_not_repaid = years_employed["years_employed_not_repaid"]
+                    years_employed_repaid_list = [int(key) for key, val in years_employed_repaid.items() for _ in range(val)]
+                    years_employed_not_repaid_list = [int(key) for key, val in years_employed_not_repaid.items() for _ in range(val)]
 
-                st.caption("&nbsp;")
-                
-                years_employed = statistical_years_employed()
-                years_employed_repaid = years_employed["years_employed_repaid"]
-                years_employed_not_repaid = years_employed["years_employed_not_repaid"]
-                years_employed_repaid_list = [int(key) for key, val in years_employed_repaid.items() for _ in range(val)]
-                years_employed_not_repaid_list = [int(key) for key, val in years_employed_not_repaid.items() for _ in range(val)]
+                    fig_years_worked = ff.create_distplot([years_employed_repaid_list, years_employed_not_repaid_list], 
+                                                group_labels, show_hist=False, show_rug=False, 
+                                                colors=colors)
 
-                fig_years_worked = ff.create_distplot([years_employed_repaid_list, years_employed_not_repaid_list], 
-                                            group_labels, show_hist=False, show_rug=False, 
-                                            colors=colors)
+                    fig_years_worked.update_layout(
+                        paper_bgcolor="white",
+                        font={
+                            "family": "sans serif"
+                        },
+                        autosize=False,
+                        width=500,
+                        height=360,
+                        margin=dict(
+                            l=50, r=50, b=0, t=20, pad=0
+                        ),
+                        title={
+                            "text" : "Years employed by the client vs Current clients",
+                            "y" : 1,
+                            "x" : 0.45,
+                            "xanchor" : "center",
+                            "yanchor" : "top"
+                        },
+                        xaxis_title="Years employed",
+                        yaxis_title="Density",
+                        legend={
+                            "traceorder" : "normal"
+                        }
+                    )
+                    fig_years_worked.add_vline(x=data["yearsEmployed"], line_width=3,
+                                    line_dash="dash", line_color="blue", annotation_text="Years employed by the client")
 
-                fig_years_worked.update_layout(
-                    paper_bgcolor="white",
-                    font={
-                        "family": "sans serif"
-                    },
-                    autosize=False,
-                    width=500,
-                    height=360,
-                    margin=dict(
-                        l=50, r=50, b=0, t=20, pad=0
-                    ),
-                    title={
-                        "text" : "Years employed by the client vs Current clients",
-                        "y" : 1,
-                        "x" : 0.45,
-                        "xanchor" : "center",
-                        "yanchor" : "top"
-                    },
-                    xaxis_title="Years employed",
-                    yaxis_title="",
-                    legend={
-                        "traceorder" : "normal"
-                    }
-                )
-                fig_years_worked.add_vline(x=data["yearsEmployed"], line_width=3,
-                                line_dash="dash", line_color="blue", annotation_text="Years employed by the client")
+                    col2_gs_1.plotly_chart(fig_years_worked, config=config, use_container_width=True)
 
-                col2_gs.plotly_chart(fig_years_worked, config=config, use_container_width=True)
 
-                ########################################################
-                # Statistical AMT Income
-                ########################################################
-            
-                st.caption("&nbsp;")
+            with cgs2:    
 
-                fig_income = px.histogram(df_current_clients, x="AMT_INCOME_TOTAL", color="TARGET", 
-                          color_discrete_map={0:"Green", 1:"Red"}, labels={0:"Green", 1:"Red"})
+                col1_gs_2, col2_gs_2 = cgs2.columns(2)
 
-                fig_income.update_layout(
-                    paper_bgcolor="white",
-                    font={
-                        "family": "sans serif"
-                    },
-                    autosize=False,
-                    width=500,
-                    height=360,
-                    margin=dict(
-                        l=50, r=50, b=0, t=20, pad=0
-                    ),
-                    title={
-                        "text" : "Client's Income vs Current clients",
-                        "y" : 1,
-                        "x" : 0.45,
-                        "xanchor" : "center",
-                        "yanchor" : "top"
-                    },
-                    xaxis_title="Income",
-                    legend_title_text= "",
-                    showlegend=False,
-                    xaxis_range=[25000, 300000]
-                )
-                fig_income.add_vline(x=data["totalIncome"], line_width=3,
-                                line_dash="dash", line_color="blue", annotation_text="Client's age")
+                with col1_gs_2:
 
-                col2_gs.plotly_chart(fig_income, config=config, use_container_width=True)
+                    ########################################################
+                    # Statistical AMT Credit
+                    ########################################################
+
+                    st.caption("&nbsp;")
+
+                    amt_credit = statistical_amt_credit()
+                    amt_credit_repaid = amt_credit["amt_credit_repaid"]
+                    amt_credit_not_repaid = amt_credit["amt_credit_not_repaid"]
+                    amt_credit_repaid_list = [float(key) for key, val in amt_credit_repaid.items() for _ in range(val)]
+                    amt_credit_not_repaid_list = [float(key) for key, val in amt_credit_not_repaid.items() for _ in range(val)]
+
+                    fig_amt_credit = ff.create_distplot([amt_credit_repaid_list, amt_credit_not_repaid_list], 
+                                                group_labels, show_hist=False, show_rug=False, 
+                                                colors=colors)
+
+                    fig_amt_credit.update_layout(
+                        paper_bgcolor="white",
+                        font={
+                            "family": "sans serif"
+                        },
+                        autosize=False,
+                        width=500,
+                        height=360,
+                        margin=dict(
+                            l=50, r=50, b=0, t=20, pad=0
+                        ),
+                        title={
+                            "text" : "Client's AMT credit vs Current clients",
+                            "y" : 1,
+                            "x" : 0.45,
+                            "xanchor" : "center",
+                            "yanchor" : "top"
+                        },
+                        xaxis_title="AMT Credit",
+                        yaxis_title="Density",
+                        legend={
+                            "traceorder" : "normal"
+                        }
+                    )
+                    fig_amt_credit.add_vline(x=data["credit"], line_width=3,
+                                    line_dash="dash", line_color="blue", annotation_text="Client's AMT credit")
+
+                    col1_gs_2.plotly_chart(fig_amt_credit, config=config, use_container_width=True)
+
+                with col2_gs_2:
+
+                    st.caption("&nbsp;")
+
+                    fig_income = px.histogram(df_current_clients, x="AMT_INCOME_TOTAL", color="TARGET", 
+                            color_discrete_map={0:"Green", 1:"Red"}, labels={0:"Green", 1:"Red"})
+
+                    fig_income.update_layout(
+                        paper_bgcolor="white",
+                        font={
+                            "family": "sans serif"
+                        },
+                        autosize=False,
+                        width=500,
+                        height=360,
+                        margin=dict(
+                            l=50, r=50, b=0, t=20, pad=0
+                        ),
+                        title={
+                            "text" : "Client's Income vs Current clients",
+                            "y" : 1,
+                            "x" : 0.45,
+                            "xanchor" : "center",
+                            "yanchor" : "top"
+                        },
+                        xaxis_title="Income",
+                        legend_title_text= "",
+                        showlegend=False,
+                        xaxis_range=[25000, 300000]
+                    )
+                    fig_income.add_vline(x=data["totalIncome"], line_width=3,
+                                    line_dash="dash", line_color="blue", annotation_text="Client's age")
+
+                    col2_gs_2.plotly_chart(fig_income, config=config, use_container_width=True)
