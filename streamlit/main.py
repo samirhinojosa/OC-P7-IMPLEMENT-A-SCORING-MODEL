@@ -387,7 +387,7 @@ else:
                             "yanchor" : "top"
                         },
                         xaxis_title="Ages",
-                        yaxis_title="Density",
+                        yaxis_title="density",
                         legend={
                             "traceorder" : "normal"
                         }
@@ -434,7 +434,7 @@ else:
                             "yanchor" : "top"
                         },
                         xaxis_title="Years employed",
-                        yaxis_title="Density",
+                        yaxis_title="density",
                         legend={
                             "traceorder" : "normal"
                         }
@@ -486,7 +486,7 @@ else:
                             "yanchor" : "top"
                         },
                         xaxis_title="AMT Credit",
-                        yaxis_title="Density",
+                        yaxis_title="density",
                         legend={
                             "traceorder" : "normal"
                         }
@@ -523,7 +523,7 @@ else:
                         },
                         xaxis_title="Income",
                         legend_title_text= "",
-                        showlegend=False,
+                        showlegend=True,
                         xaxis_range=[25000, 300000]
                     )
                     fig_income.add_vline(x=data["totalIncome"], line_width=3,

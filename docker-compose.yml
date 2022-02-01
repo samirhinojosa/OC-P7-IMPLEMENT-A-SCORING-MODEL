@@ -18,7 +18,7 @@ services:
         depends_on:
             - fastapi
         ports: 
-            - 8501:8501
+            - 80:8501
         networks:
             - deploy_network
         container_name: streamlit
