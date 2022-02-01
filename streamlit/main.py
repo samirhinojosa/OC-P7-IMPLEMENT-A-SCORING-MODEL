@@ -162,9 +162,8 @@ page_names = ["🏠 Home", "⚙️ Client prediction"]
 page = sb.radio("", page_names, index=0)
 sb.write('<style>.css-1p2iens { margin-bottom: 0px !important; min-height: 0 !important;}</style>', unsafe_allow_html=True)
 
-msg_sb = sb.info("In this section, you can **navigate** through the **Home page** where you'll find " \
-                "information related with the project. At the same time, you can go to the **Client prediction page**, " \
-                "where you can make predictions to know whether client will pay the loan based on his information.")
+msg_sb = sb.info("**How to use it ?** Select the **Home page** to see information related with the project. " \
+                "Select **Client prediction** to know whether a specific client will pay the loan based on his information.")
 
 if page == "🏠 Home":
 
@@ -177,15 +176,27 @@ if page == "🏠 Home":
                         'The mision will be treated as a <strong>binary classification problem</strong>.<br>So, 0 will be the class who repaid/pay '\
                         'the loan and 1 will be the class who did not repay/pay the loan.</li>'\
                         '<li>Build an interactive <strong>dashboard for customer relationship managers</strong> to interpret the predictions made by the model,<br>'\
-                        'and improve customer knowledge of customer relationship loaders.</li>'
+                        'and improve customer knowledge of customer relationship loaders.</li>'\
+                    '</ul>'
     st.markdown(objectives_list, unsafe_allow_html=True)
     
-    
-    st.subheader("This is the subheader")
-    st.text("Esto es una prueba.")
-    st.caption("This is a string that explains something above.")
-    st.markdown('Streamlit is **_really_ cool**.')
-    st.text("-------------FLAG-------------")
+    st.subheader("How to use it ?")
+    how_to_use_text = "You can navigate through the <strong>Home page</strong> where you will find information related with the project.<br>"\
+                        "Also, you can go to the <strong>Client prediction</strong> to know whether a specific client will pay the loan based on his information"
+    st.markdown(how_to_use_text, unsafe_allow_html=True)
+
+    st.subheader("Other information")
+    #st_title_data = '<h4>Data</h4>'
+    #st.markdown(st_title_data, unsafe_allow_html=True)
+
+    other_text = '<ul style="list-style-type:disc;">'\
+                    '<li><h4>Data</h4>'\
+                    'The data used to develop this project are based on the <a href="https://www.kaggle.com/" target="_blank">Kaggle\'s</a> competition: '\
+                    '<a href="https://www.kaggle.com/c/home-credit-default-risk/overview" target="_blank">Home Credit Default Risk</a></li>'\
+                    '<li><h4>Repository</h4>'\
+                    'You can find more information about the project\'s code in its <a href="https://github.com/samirhinojosa/OC-P7-implement-a-scoring-model" target="_blank">Github\' repository</a></li>'\
+                '</ul>'
+    st.markdown(other_text, unsafe_allow_html=True)
 
 else:
 
@@ -207,7 +218,7 @@ else:
     with col2_cs:
 
         msg_client_selection = st.info("Select a client to **obtain** " \
-                                "information related to **probability** of a client **honoring on the loan**.\n " \
+                                "information related to **probability** of a client **paying the loan**. " \
                                 "In addition, you can analyze client information against the general data. ")
 
     with col3_cs:
