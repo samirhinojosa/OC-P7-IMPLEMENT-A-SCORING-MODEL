@@ -527,6 +527,6 @@ else:
                         xaxis_range=[25000, 300000]
                     )
                     fig_income.add_vline(x=data["totalIncome"], line_width=3,
-                                    line_dash="dash", line_color="blue", annotation_text="Client's age")
+                                    line_dash="dash", line_color="blue", annotation_text="Client's income")
 
                     col2_gs_2.plotly_chart(fig_income, config=config, use_container_width=True)
