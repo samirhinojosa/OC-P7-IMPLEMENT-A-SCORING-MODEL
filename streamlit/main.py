@@ -10,7 +10,7 @@ import pandas as pd
 # Loading images to the website
 ########################################################
 icon = Image.open("images/favicon.ico")
-image = Image.open("images/home-credit.png")
+image = Image.open("images/pret-a-depenser.png")
 
 
 ########################################################
@@ -24,7 +24,7 @@ df_current_clients = pd.read_csv("datasets/df_current_clients_reduced.csv",
 # General settings
 ########################################################
 st.set_page_config(
-    page_title="Home credit Default Risk",
+    page_title="Prêt à dépenser - Default Risk",
     page_icon=icon,
     layout="wide",
     initial_sidebar_state="expanded",
@@ -62,6 +62,9 @@ st.markdown(f""" <style>
     #data, #repository{{
         padding: 0px;
     }}
+    .css-1kyxreq.etr89bj0{{
+        justify-content: center;
+    }}
     .reportview-container .main .block-container{{
         padding-top: {padding}rem;
         padding-right: {padding}rem;
@@ -86,8 +89,8 @@ config = {
 ########################################################
 # Page information
 ########################################################
-st_title = '<h1 style="color:#C80F2E; margin-bottom:0; padding: 1.25rem 0px 0rem;">Home Credit - Default Risk</h1>'
-st_title_hr = '<hr style="background-color:#C80F2E; width:60%; text-align:left; margin-left:0; margin-top:0">'
+st_title = '<h1 style="color:#262730; margin-bottom:0; padding: 1.25rem 0px 0rem;">Prêt à dépenser - Default Risk</h1>'
+st_title_hr = '<hr style="background-color:#F0F2F6; width:60%; text-align:left; margin-left:0; margin-top:0">'
 st.markdown(st_title, unsafe_allow_html=True)
 st.markdown(st_title_hr, unsafe_allow_html=True)
 
@@ -201,7 +204,7 @@ if page == "🏠 Home":
     other_text = '<ul style="list-style-type:disc;">'\
                     '<li><h4>Data</h4>'\
                     'The data used to develop this project are based on the <a href="https://www.kaggle.com/" target="_blank">Kaggle\'s</a> competition: '\
-                    '<a href="https://www.kaggle.com/c/home-credit-default-risk/overview" target="_blank">Home Credit Default Risk</a></li>'\
+                    '<a href="https://www.kaggle.com/c/home-credit-default-risk/overview" target="_blank">Home Credit - Default Risk</a></li>'\
                     '<li><h4>Repository</h4>'\
                     'You can find more information about the project\'s code in its <a href="https://github.com/samirhinojosa/OC-P7-implement-a-scoring-model" target="_blank">Github\' repository</a></li>'\
                 '</ul>'
@@ -523,7 +526,7 @@ else:
                         },
                         xaxis_title="Income",
                         legend_title_text= "",
-                        showlegend=True,
+                        showlegend=False,
                         xaxis_range=[25000, 300000]
                     )
                     fig_income.add_vline(x=data["totalIncome"], line_width=3,
