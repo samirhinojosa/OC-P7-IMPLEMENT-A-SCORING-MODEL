@@ -6,7 +6,7 @@ __pycache__/
 # C extensions
 *.so
 
-# Keys
+# Private key
 *.ppk
 *.pem
 
