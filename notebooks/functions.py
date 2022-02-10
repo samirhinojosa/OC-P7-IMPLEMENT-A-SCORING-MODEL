@@ -33,6 +33,30 @@ def memory_usage(df):
     return (memory_usage)
 
 
+def memory_optimization(df):
+    """
+    Method used to optimize the memory usage.
+
+    Parameters:
+    -----------------
+        df (pandas.DataFrame): Dataset to analyze
+        
+    Returns:
+    -----------------
+        df (pandas.DataFrame): Dataset optimized
+    """ 
+    
+    for col in df.columns:
+        if df[col].dtype == "int64" and df[col].nunique() == 2:
+            df[col] = df[col].astype("int8")
+            
+    for col in df.columns:
+        if df[col].dtype == "float64" and df[col].min() >= -2147483648 and df[col].max() <= 2147483648:
+            df[col] = df[col].astype("float32")
+            
+    return df
+
+
 def df_analysis(df, name_df, *args, **kwargs):
     """
     Method used to analyze on the DataFrame.
