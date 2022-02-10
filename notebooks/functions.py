@@ -12,6 +12,27 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
+def memory_usage(df):
+    """
+    Method used to calculate the used of memory based on a specific DataFrame.
+
+    Parameters:
+    -----------------
+        df (pandas.DataFrame): Dataset to analyze
+        
+    Returns:
+    -----------------
+        memory_usage (string) : The dataset's size on memory.
+    """
+    
+    # Calculating the memory usage based on dataframe.info()
+    buf = io.StringIO()
+    df.info(buf=buf)
+    memory_usage = buf.getvalue().split("\n")[-2]
+    
+    return (memory_usage)
+
+
 def df_analysis(df, name_df, *args, **kwargs):
     """
     Method used to analyze on the DataFrame.
