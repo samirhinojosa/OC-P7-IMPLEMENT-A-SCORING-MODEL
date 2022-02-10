@@ -39,6 +39,11 @@ This will have to contain at least the following features:
 - Limits and possible improvements (1 page maximum)
 A presentation medium for defense, detailing the work done.
 
+#### **Final work**
+You can see the **final work** in the following links
+- [Frontend with Streamlit](http://home-credit.samirhinojosa.com/)
+- [Endpoint API](http://home-credit.samirhinojosa.com:8008/docs)
+
 ## **The data**
 
 Here are [the data](https://www.kaggle.com/c/home-credit-default-risk/data) you will need to make the dashboard. 
@@ -46,12 +51,11 @@ For more simplicity, you can download them to [this address](https://s3-eu-west-
 
 ## **Repository file structure**
 
-- cleaning_notebook.ipynb: Cleaning notebook
-- modeling_notebook.ipynb: Notebook with predictions
-- datasets: datasets of the project
-- images: Images and graphs of the project
+- fastapi: Backend with the prediction model
+- notebooks: Notebooks used in the project
+- streamlit: Frontend of the project
 - supports: Folder with documents to support the work done
-    - Project 5 presentation: Project presentation in French
+    - Project 7 presentation: Project presentation in French
 
 ### **Final note**
 

@@ -1,0 +1,3 @@
+Dashboard : http://home-credit.samirhinojosa.com/
+API Endpoints : http://home-credit.samirhinojosa.com:8008/docs
+Repository : https://github.com/samirhinojosa/OC-P7-implement-a-scoring-model
