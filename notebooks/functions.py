@@ -105,9 +105,7 @@ def df_analysis(df, name_df, *args, **kwargs):
         columns_name_length.append(len(col))
 
     # Calculating the memory usage based on dataframe.info()
-    buf = io.StringIO()
-    df.info(buf=buf)
-    memory_usage = buf.getvalue().split("\n")[-2]
+    memory = memory_usage(df)
 
     if df.empty:
         print("The", name_df, "dataset is empty. Please verify the file.")
@@ -158,7 +156,7 @@ def df_analysis(df, name_df, *args, **kwargs):
 
         print("- Unique indexes:\t\t\t", df.index.is_unique)
         print("- Memory usage:\t\t\t\t",
-              memory_usage.split("memory usage: ")[1])
+              memory.split("memory usage: ")[1])
 
         if columns is not None:
             string_present = "present multiple times in the dataframe."
