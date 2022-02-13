@@ -282,4 +282,3 @@ def barplot_and_pie(df, title, subtitle_keyword):
 
     plt.tight_layout()
     plt.show()
-
