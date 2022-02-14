@@ -17,3 +17,4 @@ requests-toolbelt==0.9.1
 Pillow==9.0.0
 plotly==5.5.0
 scipy==1.7.3
+boto==3-1.16.0
