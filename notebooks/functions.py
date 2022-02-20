@@ -12,6 +12,51 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
+def memory_usage(df):
+    """
+    Method used to calculate the used of memory based on a specific DataFrame.
+
+    Parameters:
+    -----------------
+        df (pandas.DataFrame): Dataset to analyze
+        
+    Returns:
+    -----------------
+        memory_usage (string) : The dataset's size on memory.
+    """
+    
+    # Calculating the memory usage based on dataframe.info()
+    buf = io.StringIO()
+    df.info(buf=buf)
+    memory_usage = buf.getvalue().split("\n")[-2]
+    
+    return (memory_usage)
+
+
+def memory_optimization(df):
+    """
+    Method used to optimize the memory usage.
+
+    Parameters:
+    -----------------
+        df (pandas.DataFrame): Dataset to analyze
+        
+    Returns:
+    -----------------
+        df (pandas.DataFrame): Dataset optimized
+    """ 
+    
+    for col in df.columns:
+        if df[col].dtype == "int64" and df[col].nunique() == 2:
+            df[col] = df[col].astype("int8")
+            
+    for col in df.columns:
+        if df[col].dtype == "float64" and df[col].min() >= -2147483648 and df[col].max() <= 2147483648:
+            df[col] = df[col].astype("float32")
+            
+    return df
+
+
 def df_analysis(df, name_df, *args, **kwargs):
     """
     Method used to analyze on the DataFrame.
@@ -60,9 +105,7 @@ def df_analysis(df, name_df, *args, **kwargs):
         columns_name_length.append(len(col))
 
     # Calculating the memory usage based on dataframe.info()
-    buf = io.StringIO()
-    df.info(buf=buf)
-    memory_usage = buf.getvalue().split("\n")[-2]
+    memory = memory_usage(df)
 
     if df.empty:
         print("The", name_df, "dataset is empty. Please verify the file.")
@@ -113,7 +156,7 @@ def df_analysis(df, name_df, *args, **kwargs):
 
         print("- Unique indexes:\t\t\t", df.index.is_unique)
         print("- Memory usage:\t\t\t\t",
-              memory_usage.split("memory usage: ")[1])
+              memory.split("memory usage: ")[1])
 
         if columns is not None:
             string_present = "present multiple times in the dataframe."
@@ -239,4 +282,3 @@ def barplot_and_pie(df, title, subtitle_keyword):
 
     plt.tight_layout()
     plt.show()
-
