@@ -372,9 +372,11 @@ else:
 
             with cgfi:
 
-                external_title = ("Below, you can see some general 📊**-statistics** about **clients** who " \
+                st.caption("&nbsp;")
+                external_title = ("Below, you can see some general 📊 **- statistics** about **clients** who " \
                         "**repaid** and do **not repaid** the loan based on **external souces** and **own information**")
                 st.info(external_title)
+                st.caption("&nbsp;")
 
                 client_information_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">🏦 External sources - General statistics</h3>'
                 st.markdown(client_information_title, unsafe_allow_html=True)
