@@ -5,7 +5,7 @@ import gc
 import pandas as pd
 import numpy as np
 from datetime import date, timedelta
-from fastapi import FastAPI, File
+from fastapi import FastAPI, File, HTTPException
 import lightgbm as lgb
 from lightgbm import LGBMClassifier
 import joblib
@@ -40,17 +40,21 @@ def calculate_years(days):
 
 # Columns to read on CSVs
 COLUMNS = [
-    "SK_ID_CURR", "CODE_GENDER", "DAYS_BIRTH", "DAYS_EMPLOYED",
-    "CNT_CHILDREN", "FLAG_OWN_REALTY", "FLAG_OWN_CAR",
-    "AMT_INCOME_TOTAL", "AMT_CREDIT"
+    "SK_ID_CURR", "AMT_INCOME_TOTAL", "CODE_GENDER", 
+    "DAYS_BIRTH", "DAYS_REGISTRATION", "DAYS_EMPLOYED", 
+    "AMT_CREDIT", "AMT_GOODS_PRICE", "EXT_SOURCE_2",
+    "EXT_SOURCE_3", 
 ]
 
+
 # Reading the csv
-df_clients_to_predict = pd.read_csv("datasets/df_clients_reduced_to_predict.csv")
-df_current_clients = pd.read_csv("datasets/df_current_clients_reduced.csv")
+df_clients_to_predict = pd.read_csv("datasets/df_clients_to_predict_20220221.csv")
+df_current_clients = pd.read_csv("datasets/df_current_clients_20220221.csv")
 
 df_current_clients["AGE"] = df_current_clients["DAYS_BIRTH"].apply(lambda x: calculate_years(x))
 df_current_clients["YEARS_EMPLOYED"] = df_current_clients["DAYS_EMPLOYED"].apply(lambda x: calculate_years(x))
+df_current_clients["EXT_SOURCE_2"] = df_current_clients["EXT_SOURCE_2"].round(3)
+df_current_clients["EXT_SOURCE_3"] = df_current_clients["EXT_SOURCE_3"].round(3)
 
 df_current_clients_by_target_repaid = df_current_clients[df_current_clients["TARGET"] == 0]
 df_current_clients_by_target_not_repaid = df_current_clients[df_current_clients["TARGET"] == 1]
@@ -61,10 +65,10 @@ async def clients_id():
     """ 
     EndPoint to get all clients id
     """
+    
+    clients_id = df_clients_to_predict["SK_ID_CURR"].tolist()
 
-    clientsId = df_clients_to_predict["SK_ID_CURR"].tolist()
-
-    return {"clientsId": clientsId}
+    return {"clientsId": clients_id}
 
 
 @app.get("/api/clients/{id}")
@@ -72,24 +76,30 @@ async def clients(id: int):
     """ 
     EndPoint to get client's detail 
     """ 
-    
-    # Filtering by clients id
-    df_by_id = df_clients_to_predict[COLUMNS][df_clients_to_predict["SK_ID_CURR"] == id]
-    
-    for col in df_by_id.columns:
-        globals()[col] = df_by_id.iloc[0, df_by_id.columns.get_loc(col)]
-    
-    client = {
-        "clientId" : int(SK_ID_CURR),
-        "gender" : "Man" if int(CODE_GENDER) == 0 else "Woman",
-        "age" : calculate_years(int(DAYS_BIRTH)),
-        "yearsEmployed" : calculate_years(int(DAYS_EMPLOYED)),
-        "children" : int(CNT_CHILDREN),
-        "ownRealty" : "No" if int(FLAG_OWN_REALTY) == 0 else "Yes",
-        "ownCar" : "No" if int(FLAG_OWN_CAR) == 0 else "Yes",
-        "totalIncome" : float(AMT_INCOME_TOTAL),
-        "credit" : float(AMT_CREDIT)
-    }
+
+    clients_id = df_clients_to_predict["SK_ID_CURR"].tolist()
+
+    if id not in clients_id:
+        raise HTTPException(status_code=404, detail="client's id not found")
+    else:
+        # Filtering by clients id
+        df_by_id = df_clients_to_predict[COLUMNS][df_clients_to_predict["SK_ID_CURR"] == id]
+        
+        for col in df_by_id.columns:
+            globals()[col] = df_by_id.iloc[0, df_by_id.columns.get_loc(col)]
+        
+        client = {
+            "clientId" : int(SK_ID_CURR),
+            "gender" : "Man" if int(CODE_GENDER) == 0 else "Woman",
+            "age" : calculate_years(int(DAYS_BIRTH)),
+            "antiquity" : calculate_years(int(DAYS_REGISTRATION)),
+            "yearsEmployed" : calculate_years(int(DAYS_EMPLOYED)),
+            "goodsPrice" : float(AMT_GOODS_PRICE),
+            "credit" : float(AMT_CREDIT),
+            "anualIncome" : float(AMT_INCOME_TOTAL),
+            "source2" : float(EXT_SOURCE_2),
+            "source3" : float(EXT_SOURCE_3),
+        }
 
     return client
 
@@ -100,55 +110,36 @@ async def predict(id: int):
     EndPoint to get the probability honor/compliance of a client
     """ 
 
-    # Loading the model
-    model = joblib.load("models/model_p7.pkl")
+    clients_id = df_clients_to_predict["SK_ID_CURR"].tolist()
 
-    # Filtering by client id
-    df_prediction_by_id = df_clients_to_predict[df_clients_to_predict["SK_ID_CURR"] == id]
-    df_prediction_by_id = df_prediction_by_id.drop(columns=["SK_ID_CURR"])
-
-    # Predicting
-    result = model.predict(df_prediction_by_id)
-    result_proba = model.predict_proba(df_prediction_by_id)
-
-    if (int(result[0]) == 0):
-         result = "Yes"
+    if id not in clients_id:
+        raise HTTPException(status_code=404, detail="client's id not found")
     else:
-         result = "No"    
+        # Loading the model
+        model = joblib.load("models/model_20220220.pkl")
 
-    return {"repay" : result, "probability" : result_proba}
+        threshold = 0.135
 
+        # Filtering by client id
+        df_prediction_by_id = df_clients_to_predict[df_clients_to_predict["SK_ID_CURR"] == id]
+        df_prediction_by_id = df_prediction_by_id.drop(df_prediction_by_id.columns[[0, 1]], axis=1)
 
-@app.get("/api/statistics/amtIncomes")
-async def statistical_amt_income():
-    """ 
-    EndPoint to get some statistics - AMT Income
-    """
+        # Predicting
+        result_proba = model.predict_proba(df_prediction_by_id)
+        y_prob = result_proba[:, 1]
 
-    amt_income_data = df_current_clients[["AMT_INCOME_TOTAL", "TARGET"]].to_dict()
+        result = (y_prob >= threshold).astype(int)
 
-    return amt_income_data
-
-
-@app.get("/api/statistics/amtCredits")
-async def statistical_amt_credit():
-    """ 
-    EndPoint to get some statistics - AMT Credit
-    """
-
-    amt_credit_data_repaid = df_current_clients_by_target_repaid.groupby("AMT_CREDIT").size()
-    amt_credit_data_repaid = pd.DataFrame(amt_credit_data_repaid).reset_index()
-    amt_credit_data_repaid.columns = ["AMT_CREDIT", "AMOUNT"]
-    amt_credit_data_repaid = amt_credit_data_repaid.set_index("AMT_CREDIT").to_dict()["AMOUNT"]
-
-    amt_credit_data_not_repaid = df_current_clients_by_target_not_repaid.groupby("AMT_CREDIT").size()
-    amt_credit_data_not_repaid = pd.DataFrame(amt_credit_data_not_repaid).reset_index()
-    amt_credit_data_not_repaid.columns = ["AMT_CREDIT", "AMOUNT"]
-    amt_credit_data_not_repaid = amt_credit_data_not_repaid.set_index("AMT_CREDIT").to_dict()["AMOUNT"]
+        if (int(result[0]) == 0):
+            result = "Yes"
+        else:
+            result = "No"    
 
     return {
-        "amt_credit_repaid" : amt_credit_data_repaid,
-        "amt_credit_not_repaid" : amt_credit_data_not_repaid
+        "repay" : result,
+        "probability0" : result_proba[0][0],
+        "probability1" : result_proba[0][1],
+        "threshold" : threshold
     }
 
 
@@ -191,3 +182,94 @@ async def statistical_years_employed():
         "years_employed_repaid" : years_employed_data_repaid,
         "years_employed_not_repaid" : years_employed_data_not_repaid
     }
+
+
+@app.get("/api/statistics/amtCredits")
+async def statistical_amt_credit():
+    """ 
+    EndPoint to get some statistics - AMT Credit
+    """
+
+    amt_credit_data_repaid = df_current_clients_by_target_repaid.groupby("AMT_CREDIT").size()
+    amt_credit_data_repaid = pd.DataFrame(amt_credit_data_repaid).reset_index()
+    amt_credit_data_repaid.columns = ["AMT_CREDIT", "AMOUNT"]
+    amt_credit_data_repaid = amt_credit_data_repaid.set_index("AMT_CREDIT").to_dict()["AMOUNT"]
+
+    amt_credit_data_not_repaid = df_current_clients_by_target_not_repaid.groupby("AMT_CREDIT").size()
+    amt_credit_data_not_repaid = pd.DataFrame(amt_credit_data_not_repaid).reset_index()
+    amt_credit_data_not_repaid.columns = ["AMT_CREDIT", "AMOUNT"]
+    amt_credit_data_not_repaid = amt_credit_data_not_repaid.set_index("AMT_CREDIT").to_dict()["AMOUNT"]
+
+    return {
+        "amt_credit_repaid" : amt_credit_data_repaid,
+        "amt_credit_not_repaid" : amt_credit_data_not_repaid
+    }
+
+
+@app.get("/api/statistics/amtIncomes")
+async def statistical_amt_income():
+    """ 
+    EndPoint to get some statistics - AMT Income
+    """
+
+    amt_income_data_repaid = df_current_clients_by_target_repaid.groupby("AMT_INCOME_TOTAL").size()
+    amt_income_data_repaid = pd.DataFrame(amt_income_data_repaid).reset_index()
+    amt_income_data_repaid.columns = ["AMT_INCOME", "AMOUNT"]
+    amt_income_data_repaid = amt_income_data_repaid.set_index("AMT_INCOME").to_dict()["AMOUNT"]
+
+    amt_income_data_not_repaid = df_current_clients_by_target_not_repaid.groupby("AMT_INCOME_TOTAL").size()
+    amt_income_data_not_repaid = pd.DataFrame(amt_income_data_not_repaid).reset_index()
+    amt_income_data_not_repaid.columns = ["AMT_INCOME", "AMOUNT"]
+    amt_income_data_not_repaid = amt_income_data_not_repaid.set_index("AMT_INCOME").to_dict()["AMOUNT"]
+
+    return {
+        "amt_income_repaid" : amt_income_data_repaid,
+        "amt_income_not_repaid" : amt_income_data_not_repaid
+    }
+
+@app.get("/api/statistics/extSource2")
+async def statistical_ext_source_2():
+    """ 
+    EndPoint to get some statistics - EXT SOURCE 2
+    """
+
+    ext_source_2_data_repaid = df_current_clients_by_target_repaid.groupby("EXT_SOURCE_2").size()
+    ext_source_2_data_repaid = pd.DataFrame(ext_source_2_data_repaid).reset_index()
+    ext_source_2_data_repaid.columns = ["EXT_SOURCE_2", "AMOUNT"]
+    ext_source_2_data_repaid = ext_source_2_data_repaid.set_index("EXT_SOURCE_2").to_dict()["AMOUNT"]
+
+    ext_source_2_data_not_repaid = df_current_clients_by_target_not_repaid.groupby("EXT_SOURCE_2").size()
+    ext_source_2_data_not_repaid = pd.DataFrame(ext_source_2_data_not_repaid).reset_index()
+    ext_source_2_data_not_repaid.columns = ["EXT_SOURCE_2", "AMOUNT"]
+    ext_source_2_data_not_repaid = ext_source_2_data_not_repaid.set_index("EXT_SOURCE_2").to_dict()["AMOUNT"]
+
+    return {
+        "ext_source_2_repaid" : ext_source_2_data_repaid,
+        "ext_source_2_not_repaid" : ext_source_2_data_not_repaid
+    }
+
+
+@app.get("/api/statistics/extSource3")
+async def statistical_ext_source_3():
+    """ 
+    EndPoint to get some statistics - EXT SOURCE 3
+    """
+
+    ext_source_3_data_repaid = df_current_clients_by_target_repaid.groupby("EXT_SOURCE_3").size()
+    ext_source_3_data_repaid = pd.DataFrame(ext_source_3_data_repaid).reset_index()
+    ext_source_3_data_repaid.columns = ["EXT_SOURCE_3", "AMOUNT"]
+    ext_source_3_data_repaid = ext_source_3_data_repaid.set_index("EXT_SOURCE_3").to_dict()["AMOUNT"]
+
+    ext_source_3_data_not_repaid = df_current_clients_by_target_not_repaid.groupby("EXT_SOURCE_3").size()
+    ext_source_3_data_not_repaid = pd.DataFrame(ext_source_3_data_not_repaid).reset_index()
+    ext_source_3_data_not_repaid.columns = ["EXT_SOURCE_3", "AMOUNT"]
+    ext_source_3_data_not_repaid = ext_source_3_data_not_repaid.set_index("EXT_SOURCE_3").to_dict()["AMOUNT"]
+
+    return {
+        "ext_source_3_repaid" : ext_source_3_data_repaid,
+        "ext_source_3_not_repaid" : ext_source_3_data_not_repaid
+    }
+
+
+
+    

@@ -14,13 +14,6 @@ image = Image.open("images/pret-a-depenser.png")
 
 
 ########################################################
-# Loading dataset
-########################################################
-df_current_clients = pd.read_csv("datasets/df_current_clients_reduced.csv",
-                        usecols = ["AMT_INCOME_TOTAL", "TARGET"], low_memory=True)
-
-
-########################################################
 # General settings
 ########################################################
 st.set_page_config(
@@ -165,6 +158,33 @@ def statistical_amt_credit():
     else:
         return "Error"
 
+@st.cache
+def statistical_amt_income():
+    # Getting General statistics amt incomes
+    response = fetch(session, f"http://fastapi:8008/api/statistics/amtIncomes")
+    if response:
+        return response
+    else:
+        return "Error"
+
+@st.cache
+def statistical_ext_source_2():
+    # Getting General statistics EXT SOURCE 2
+    response = fetch(session, f"http://fastapi:8008/api/statistics/extSource2")
+    if response:
+        return response
+    else:
+        return "Error"
+
+@st.cache
+def statistical_ext_source_3():
+    # Getting General statistics EXT SOURCE 3
+    response = fetch(session, f"http://fastapi:8008/api/statistics/extSource3")
+    if response:
+        return response
+    else:
+        return "Error"
+
 
 ########################################################
 # Sidebar section
@@ -216,7 +236,7 @@ else:
     st.markdown(client_selection_title, unsafe_allow_html=True)
 
     st.info("Select a client to **obtain** information related to **probability** of a client " \
-            "**paying the loan**.\nIn addition, you can analyze some stats.")
+            "**not paying the loan**.\nIn addition, you can analyze some stats.")
 
     client_container_selection = st.container()
     col1_cs, col2_cs, col3_cs = client_container_selection.columns([1, 2, 1])
@@ -245,7 +265,7 @@ else:
     if result:
     
         data = client_details(client_id)
-        ccp, cgs1, cgs2 = (st.container() for i in range(3))
+        ccp, cgfi, cgs1, cgs2 = (st.container() for i in range(4))
 
         with ccp:
 
@@ -253,32 +273,38 @@ else:
             st.markdown(client_information_title, unsafe_allow_html=True)
 
             prediction = client_prediction(client_id)
-            prediction_value = round(float(list(prediction["probability"].keys())[0]), 3) * 100
 
-            if prediction["repay"] == "Yes":
-                st.success("Based on the client's information, the credit application is **accepted!**")
+            repay = prediction["repay"]
+            threshold = prediction["threshold"] * 100
+            probability_value_0 = prediction["probability0"] * 100
+            probability_value_1 = prediction["probability1"] * 100
+
+            if repay == "Yes":
+
+                success_msg = "Based on the **threshold " + str(threshold) + \
+                    "** and the client's information, the credit application is **ACCEPTED!**"
+                st.success(success_msg)
             else:
-                if prediction_value > 50:
-                    st.warning("It is necessary to **analyze more in details** the client's information to accept the credit")
-                else:
-                    st.error("Based on the client's information, the credit application is **not accepted!**")
+                error_msg = "Based on the **threshold " + str(threshold) + \
+                    "**, and the client's information, the credit application is **NOT ACCEPTED!**"
+                st.error(error_msg)
 
             col1_cp, col2_cp, col3_cp, col4_cp = ccp.columns([2, 1, 1, 1])
 
             with col1_cp:
-                
+                    
                 figP = go.Figure(
                         go.Indicator(
                             mode = "gauge+number",
-                            value = prediction_value,
+                            value = probability_value_1,
                             domain = {"x": [0, 1], "y": [0, 1]},
                             gauge = {
                                 "axis": {"range": [None, 100], "tickwidth": 1, "tickcolor": "darkblue", "tick0": 0, "dtick": 20},
                                 "bar": {"color": "LawnGreen"},
                                 "bgcolor": "white",
                                 "steps": [
-                                    {"range": [0, 60], "color": "Red"},
-                                    {"range": [60, 100], "color": "Green"}
+                                    {"range": [0, threshold], "color": "Green"},
+                                    {"range": [threshold, 100], "color": "Red"}
                                 ],
                             }
                         )   
@@ -298,7 +324,7 @@ else:
                     ),
                     annotations=[
                         go.layout.Annotation(
-                            text=f"<b>Probability that the client will pay the loan</b>",
+                            text=f"<b>Probability that the client will not pay the loan</b>",
                             x=0.5, xanchor="center", xref="paper",
                             y=0, yanchor="bottom", yref="paper",
                             showarrow=False,
@@ -313,30 +339,30 @@ else:
                 st.caption("&nbsp;")
                 st.markdown("**Client id:**")
                 st.caption(data["clientId"])
-                st.markdown("**Children:**")
-                st.caption(data["children"])
-                st.markdown("**Years employed:**")
-                st.caption(data["yearsEmployed"])
+                st.markdown("**Antiquity:**")
+                st.caption(data["antiquity"])
+                st.markdown("**Credit:**")
+                st.caption("$ " + str(data["credit"]))
 
             with col3_cp:
                 st.caption("&nbsp;")
                 st.markdown("**Gender:**")
                 st.caption(data["gender"])
-                st.markdown("**Own realty:**")
-                st.caption(data["ownRealty"])
+                st.markdown("**Goods price:**")
+                st.caption("$ " + str(data["goodsPrice"]))
                 st.markdown("**Anual income:**")
-                total_income = "$ {:,.2f}".format(data["totalIncome"])
-                st.caption(total_income)
+                st.caption("$ " + str(data["anualIncome"]))
 
             with col4_cp:
                 st.caption("&nbsp;")
                 st.markdown("**Age:**")
                 st.caption(data["age"])
-                st.markdown("**Own car:**")
-                st.caption(data["ownCar"])
-                st.markdown("**AMT credit:**")
-                current_credit = "$ {:,.2f}".format(data["credit"])
-                st.caption(current_credit)
+                st.markdown("**Years employed:**")
+                st.caption(data["yearsEmployed"])
+                st.markdown("**Source 2:**")
+                ext_source_2 = "{:,.3f}".format(data["source2"])
+                st.caption(ext_source_2)                
+
 
         if see_stats:
 
@@ -344,13 +370,114 @@ else:
             group_labels = ["Repaid", "Not repaid"]
             colors=["Green", "Red"]
 
-            with cgs1:
+            with cgfi:
 
-                client_information_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">📊 General statistics</h3>'
+                external_title = ("Below, you can see some general **statistics** about **clients** who" \
+                        "**repaid** and do **not repaid** the loan based on **external souces** and **own information**")
+                st.info(external_title)
+
+                client_information_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">🏦 External sources - General statistics</h3>'
                 st.markdown(client_information_title, unsafe_allow_html=True)
 
-                st.info("Below, you can see some general statistics about clients who " \
-                        "repaid and do not repaid the loan")
+                col1_fi, col2_fi = cgfi.columns(2)
+
+                with col1_fi:
+
+                    ########################################################
+                    # Ext source 2
+                    ########################################################
+
+                    st.caption("&nbsp;")
+
+                    ext_source_2 = statistical_ext_source_2()
+                    ext_source_2_repaid = ext_source_2["ext_source_2_repaid"]
+                    ext_source_2_not_repaid = ext_source_2["ext_source_2_not_repaid"]
+                    ext_source_2_repaid_list = [float(key) for key, val in ext_source_2_repaid.items() for _ in range(val)]
+                    ext_source_2_not_repaid_list = [float(key) for key, val in ext_source_2_not_repaid.items() for _ in range(val)]
+
+                    fig_ext_source_2 = ff.create_distplot([ext_source_2_repaid_list, ext_source_2_not_repaid_list], 
+                                                group_labels, show_hist=False, show_rug=False, 
+                                                colors=colors)
+                    fig_ext_source_2.update_layout(
+                        paper_bgcolor="white",
+                        font={
+                            "family": "sans serif"
+                        },
+                        autosize=False,
+                        width=500,
+                        height=360,
+                        margin=dict(
+                            l=50, r=50, b=0, t=20, pad=0
+                        ),
+                        title={
+                            "text" : "Client's ext source 2 vs Current clients",
+                            "y" : 1,
+                            "x" : 0.45,
+                            "xanchor" : "center",
+                            "yanchor" : "top"
+                        },
+                        xaxis_title="ext source 2",
+                        yaxis_title="density",
+                        legend={
+                            "traceorder" : "normal"
+                        }
+                    )
+                    fig_ext_source_2.add_vline(x=data["source2"], line_width=3,
+                                    line_dash="dash", line_color="blue", annotation_text="Client's ext source 2")
+
+                    col1_fi.plotly_chart(fig_ext_source_2, config=config, use_container_width=True)
+            
+                with col2_fi:
+
+                    ########################################################
+                    # Ext source 3
+                    ########################################################
+
+                    st.caption("&nbsp;")
+
+                    ext_source_3 = statistical_ext_source_3()
+                    ext_source_3_repaid = ext_source_3["ext_source_3_repaid"]
+                    ext_source_3_not_repaid = ext_source_3["ext_source_3_not_repaid"]
+                    ext_source_3_repaid_list = [float(key) for key, val in ext_source_3_repaid.items() for _ in range(val)]
+                    ext_source_3_not_repaid_list = [float(key) for key, val in ext_source_3_not_repaid.items() for _ in range(val)]
+
+                    fig_ext_source_3 = ff.create_distplot([ext_source_3_repaid_list, ext_source_3_not_repaid_list], 
+                                                group_labels, show_hist=False, show_rug=False, 
+                                                colors=colors)
+                    fig_ext_source_3.update_layout(
+                        paper_bgcolor="white",
+                        font={
+                            "family": "sans serif"
+                        },
+                        autosize=False,
+                        width=500,
+                        height=360,
+                        margin=dict(
+                            l=50, r=50, b=0, t=20, pad=0
+                        ),
+                        title={
+                            "text" : "Client's ext source 3 vs Current clients",
+                            "y" : 1,
+                            "x" : 0.45,
+                            "xanchor" : "center",
+                            "yanchor" : "top"
+                        },
+                        xaxis_title="ext source 3",
+                        yaxis_title="density",
+                        legend={
+                            "traceorder" : "normal"
+                        }
+                    )
+                    fig_ext_source_3.add_vline(x=data["source3"], line_width=3,
+                                    line_dash="dash", line_color="blue", annotation_text="Client's ext source 3")
+
+                    col2_fi.plotly_chart(fig_ext_source_3, config=config, use_container_width=True)
+
+
+            with cgs1:
+
+                client_information_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">📊 Internal sources - General statistics</h3>'
+                st.markdown(client_information_title, unsafe_allow_html=True)
 
                 col1_gs_1, col2_gs_1 = cgs1.columns(2)
 
@@ -503,10 +630,22 @@ else:
 
                     st.caption("&nbsp;")
 
-                    fig_income = px.histogram(df_current_clients, x="AMT_INCOME_TOTAL", color="TARGET", 
-                            color_discrete_map={0:"Green", 1:"Red"}, labels={0:"Green", 1:"Red"})
+                    if data["anualIncome"] <= 600000:
+                        xaxis_range = [0, 600000]
+                    else:
+                        xaxis_range = None
 
-                    fig_income.update_layout(
+                    amt_income = statistical_amt_income()
+                    amt_income_repaid = amt_income["amt_income_repaid"]
+                    amt_income_not_repaid = amt_income["amt_income_not_repaid"]
+                    amt_income_repaid_list = [float(key) for key, val in amt_income_repaid.items() for _ in range(val)]
+                    amt_income_not_repaid_list = [float(key) for key, val in amt_income_not_repaid.items() for _ in range(val)]
+
+                    fig_amt_income = ff.create_distplot([amt_income_repaid_list, amt_income_not_repaid_list], 
+                                                group_labels, show_hist=False, show_rug=False, 
+                                                colors=colors)
+
+                    fig_amt_income.update_layout(
                         paper_bgcolor="white",
                         font={
                             "family": "sans serif"
@@ -517,19 +656,23 @@ else:
                         margin=dict(
                             l=50, r=50, b=0, t=20, pad=0
                         ),
+                        xaxis=dict(
+                            range=xaxis_range
+                        ),
                         title={
-                            "text" : "Client's Income vs Current clients",
+                            "text" : "Client's AMT income vs Current clients",
                             "y" : 1,
                             "x" : 0.45,
                             "xanchor" : "center",
                             "yanchor" : "top"
                         },
-                        xaxis_title="Income",
-                        legend_title_text= "",
-                        showlegend=False,
-                        xaxis_range=[25000, 300000]
+                        xaxis_title="AMT income",
+                        yaxis_title="density",
+                        legend={
+                            "traceorder" : "normal"
+                        }
                     )
-                    fig_income.add_vline(x=data["totalIncome"], line_width=3,
-                                    line_dash="dash", line_color="blue", annotation_text="Client's income")
+                    fig_amt_income.add_vline(x=data["anualIncome"], line_width=3,
+                                    line_dash="dash", line_color="blue", annotation_text="Client's AMT income")
 
-                    col2_gs_2.plotly_chart(fig_income, config=config, use_container_width=True)
+                    col2_gs_2.plotly_chart(fig_amt_income, config=config, use_container_width=True)
