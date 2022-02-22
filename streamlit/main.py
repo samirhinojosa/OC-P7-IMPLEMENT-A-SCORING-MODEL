@@ -272,6 +272,7 @@ else:
         client_id = st.selectbox(
             "Client Id list", client()
         )
+        see_local_interpretation = st.checkbox("See local interpretation")
         see_stats = st.checkbox("See stats")
 
         result = st.button(label="Predict")
@@ -281,8 +282,8 @@ else:
         st.caption("&nbsp;")
         st.caption("&nbsp;")
 
-        if see_stats:
-            st.warning("**See stats** will take more time. Are you sure ?")
+        if see_local_interpretation or see_stats:
+            st.warning("**This/These option(s)** will take more time. Are you sure ?")
 
     with col3_cs:
 
@@ -291,7 +292,7 @@ else:
     if result:
     
         data = client_details(client_id)
-        ccp, cgfi, cgs1, cgs2 = (st.container() for i in range(4))
+        ccp, cli, cgfi, cgs1, cgs2 = (st.container() for i in range(5))
 
         with ccp:
 
@@ -388,22 +389,21 @@ else:
                 ext_source_2 = "{:,.3f}".format(data["source2"])
                 st.caption(ext_source_2) 
             
-            st.caption("&nbsp;")
-            local_interpretation_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">📉 Local interpretation</h3>'
-            st.markdown(local_interpretation_title, unsafe_allow_html=True)
+        if see_local_interpretation:
 
-            data_df = clients_df(client_id)
-            data_df = pd.read_json(data_df)
-            #st.pyplot(shap.force_plot(explainer.expected_value[1], shap_values[1][data["shapPosition"],:], data_df.iloc[0,:], matplotlib=True, show=False))
+            with ccp:
 
+                st.caption("&nbsp;")
+                local_interpretation_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">📉 Local interpretation</h3>'
+                st.markdown(local_interpretation_title, unsafe_allow_html=True)
 
-            st.caption("FLAG") 
-            # visualize the first prediction's explanation (use matplotlib=True to avoid Javascript)
-            st_shap(shap.force_plot(explainer.expected_value[1], shap_values[1][data["shapPosition"],:], 
-                                    data_df.iloc[0,:]))
+                # Loading data
+                data_df = clients_df(client_id)
+                data_df = pd.read_json(data_df)
 
-
-
+                # visualize the first prediction's explanation (use matplotlib=True to avoid Javascript)
+                st_shap(shap.force_plot(explainer.expected_value[1], shap_values[1][data["shapPosition"],:], 
+                                        data_df.iloc[0,:]))
 
         if see_stats:
 
@@ -413,7 +413,6 @@ else:
 
             with cgfi:
 
-                st.caption("&nbsp;")
                 external_title = ("Below, you can see some general 📊 **- statistics** about **clients** who " \
                         "**repaid** and do **not repaid** the loan based on **external souces** and **own information**")
                 st.info(external_title)
