@@ -1,6 +1,5 @@
 import streamlit as st
 import streamlit.components.v1 as components
-
 import requests
 from PIL import Image
 import plotly.express as px
@@ -12,23 +11,11 @@ import joblib
 import shap
 
 
-def st_shap(plot, height=None):
-    shap_html = f"<head>{shap.getjs()}</head><body>{plot.html()}</body>"
-    components.html(shap_html, height=height)
-
-
 ########################################################
 # Loading images to the website
 ########################################################
 icon = Image.open("images/favicon.ico")
 image = Image.open("images/pret-a-depenser.png")
-
-
-########################################################
-# Loading shap models
-########################################################
-explainer = joblib.load("shap_models/explainer_20220220.pkl")
-shap_values = joblib.load("shap_models/shap_values_20220220.pkl")
 
 
 ########################################################
@@ -62,7 +49,8 @@ st.markdown(f""" <style>
     .block-container.css-18e3th9.egzxvld2{{
             padding: 20px 60px;
     }}
-    .css-v3ay09.edgvbvh1{{
+    .css-v3ay09.edgvbvh1,
+    .css-v3ay09.edgvbvh5 {{
         margin-right: 0;
         margin-left: auto;
         display: block;
@@ -213,6 +201,14 @@ def statistical_ext_source_3():
 
 
 ########################################################
+# To show the SHAP image
+########################################################
+def st_shap(plot, height=None):
+    shap_html = f"<head>{shap.getjs()}</head><body>{plot.html()}</body>"
+    components.html(shap_html, height=height)
+
+
+########################################################
 # Sidebar section
 ########################################################
 sb = st.sidebar # defining the sidebar
@@ -261,29 +257,25 @@ else:
     client_selection_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">🔎 Client selection</h3>'
     st.markdown(client_selection_title, unsafe_allow_html=True)
 
-    st.info("Select a client to **obtain** information related to **probability** of a client " \
-            "**not paying the loan**.\nIn addition, you can analyze some stats.")
-
     client_container_selection = st.container()
-    col1_cs, col2_cs, col3_cs = client_container_selection.columns([1, 2, 1])
+    col1_cs, col2_cs, col3_cs = client_container_selection.columns([1, 1, 1])
 
     with col1_cs:
 
-        client_id = st.selectbox(
-            "Client Id list", client()
-        )
-        see_local_interpretation = st.checkbox("See local interpretation")
-        see_stats = st.checkbox("See stats")
+        with st.form('Form1'):
 
-        result = st.button(label="Predict")
+            client_id = st.selectbox(
+                "Client Id list", client()
+            )
+            see_local_interpretation = st.checkbox("See local interpretation")
+            see_stats = st.checkbox("See stats")
+            st.warning("**Option(s)** will take more time.")
+            result = st.form_submit_button("Predict")
 
     with col2_cs:
 
-        st.caption("&nbsp;")
-        st.caption("&nbsp;")
-
-        if see_local_interpretation or see_stats:
-            st.warning("**This / These option(s)** will take more time. Are you sure ?")
+        st.info("Select a client to **obtain** information related to **probability** of a client " \
+            "**not paying the loan**.\nIn addition, you can analyze some stats.")
 
     with col3_cs:
 
@@ -391,6 +383,11 @@ else:
             
         if see_local_interpretation:
 
+            if "explainer" not in st.session_state:
+                st.session_state["explainer"] = joblib.load("shap_models/explainer_20220220.pkl")
+            if "shap_values" not in st.session_state:
+                st.session_state["shap_values"] = joblib.load("shap_models/shap_values_20220220.pkl")
+
             with ccp:
 
                 st.caption("&nbsp;")
@@ -402,7 +399,8 @@ else:
                 data_df = pd.read_json(data_df)
 
                 # visualize the first prediction's explanation (use matplotlib=True to avoid Javascript)
-                st_shap(shap.force_plot(explainer.expected_value[1], shap_values[1][data["shapPosition"],:], 
+                st_shap(shap.force_plot(st.session_state["explainer"].expected_value[1], 
+                                        st.session_state["shap_values"][1][data["shapPosition"],:], 
                                         data_df.iloc[0,:]))
 
         if see_stats:
