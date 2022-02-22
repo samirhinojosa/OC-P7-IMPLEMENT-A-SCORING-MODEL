@@ -15,3 +15,7 @@ COPY . /streamlit
 EXPOSE 8501
 
 CMD ["streamlit", "run", "main.py"]
+
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
+RUN apt-get -y install curl
+RUN apt-get install libgomp1

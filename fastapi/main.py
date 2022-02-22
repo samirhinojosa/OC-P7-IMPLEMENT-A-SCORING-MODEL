@@ -8,6 +8,7 @@ from datetime import date, timedelta
 from fastapi import FastAPI, File, HTTPException
 import lightgbm as lgb
 from lightgbm import LGBMClassifier
+import matplotlib.pyplot as plt
 import joblib
 
 
@@ -38,7 +39,9 @@ def calculate_years(days):
     return years
 
 
+########################################################
 # Columns to read on CSVs
+########################################################
 COLUMNS = [
     "SK_ID_CURR", "AMT_INCOME_TOTAL", "CODE_GENDER", 
     "DAYS_BIRTH", "DAYS_REGISTRATION", "DAYS_EMPLOYED", 
@@ -47,7 +50,9 @@ COLUMNS = [
 ]
 
 
+########################################################
 # Reading the csv
+########################################################
 df_clients_to_predict = pd.read_csv("datasets/df_clients_to_predict_20220221.csv")
 df_current_clients = pd.read_csv("datasets/df_current_clients_20220221.csv")
 
@@ -58,6 +63,7 @@ df_current_clients["EXT_SOURCE_3"] = df_current_clients["EXT_SOURCE_3"].round(3)
 
 df_current_clients_by_target_repaid = df_current_clients[df_current_clients["TARGET"] == 0]
 df_current_clients_by_target_not_repaid = df_current_clients[df_current_clients["TARGET"] == 1]
+
 
 
 @app.get("/api/clients")
@@ -82,9 +88,10 @@ async def clients(id: int):
     if id not in clients_id:
         raise HTTPException(status_code=404, detail="client's id not found")
     else:
-        # Filtering by clients id
+        # Filtering by client's id
         df_by_id = df_clients_to_predict[COLUMNS][df_clients_to_predict["SK_ID_CURR"] == id]
-        
+        idx = df_clients_to_predict[df_clients_to_predict["SK_ID_CURR"]==id].index[0]
+
         for col in df_by_id.columns:
             globals()[col] = df_by_id.iloc[0, df_by_id.columns.get_loc(col)]
         
@@ -99,6 +106,7 @@ async def clients(id: int):
             "anualIncome" : float(AMT_INCOME_TOTAL),
             "source2" : float(EXT_SOURCE_2),
             "source3" : float(EXT_SOURCE_3),
+            "shapPosition" : int(idx)
         }
 
     return client
@@ -120,7 +128,7 @@ async def predict(id: int):
 
         threshold = 0.135
 
-        # Filtering by client id
+        # Filtering by client's id
         df_prediction_by_id = df_clients_to_predict[df_clients_to_predict["SK_ID_CURR"] == id]
         df_prediction_by_id = df_prediction_by_id.drop(df_prediction_by_id.columns[[0, 1]], axis=1)
 
@@ -141,6 +149,27 @@ async def predict(id: int):
         "probability1" : result_proba[0][1],
         "threshold" : threshold
     }
+
+
+@app.get("/api/predictions/clients/shap/{id}")
+async def clients_df(id: int):
+    """ 
+    EndPoint to return a df with all client's data
+    """ 
+    
+    clients_id = df_clients_to_predict["SK_ID_CURR"].tolist()
+
+    if id not in clients_id:
+        raise HTTPException(status_code=404, detail="client's id not found")
+    else:
+
+        # Filtering by client's id
+        idx = df_clients_to_predict[df_clients_to_predict["SK_ID_CURR"]==id].index[0]
+
+        client = df_clients_to_predict[df_clients_to_predict["SK_ID_CURR"] == id].drop(columns=["SK_ID_CURR", "AMT_INCOME_TOTAL"])
+        client = client.to_json(orient="records")
+
+    return client
 
 
 @app.get("/api/statistics/ages")

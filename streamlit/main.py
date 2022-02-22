@@ -1,16 +1,34 @@
 import streamlit as st
+import streamlit.components.v1 as components
+
 import requests
 from PIL import Image
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
+import matplotlib.pyplot as plt
 import pandas as pd
+import joblib
+import shap
+
+
+def st_shap(plot, height=None):
+    shap_html = f"<head>{shap.getjs()}</head><body>{plot.html()}</body>"
+    components.html(shap_html, height=height)
+
 
 ########################################################
 # Loading images to the website
 ########################################################
 icon = Image.open("images/favicon.ico")
 image = Image.open("images/pret-a-depenser.png")
+
+
+########################################################
+# Loading shap models
+########################################################
+explainer = joblib.load("shap_models/explainer_20220220.pkl")
+shap_values = joblib.load("shap_models/shap_values_20220220.pkl")
 
 
 ########################################################
@@ -126,6 +144,14 @@ def client_details(id):
 def client_prediction(id):
     # Getting client's prediction
     response = fetch(session, f"http://fastapi:8008/api/predictions/clients/{id}")
+    if response:
+        return response
+    else:
+        return "Error"
+
+def clients_df(id):
+    # Getting client's df based on id
+    response = fetch(session, f"http://fastapi:8008/api/predictions/clients/shap/{id}")
     if response:
         return response
     else:
@@ -333,7 +359,6 @@ else:
                 )
                 
                 col1_cp.plotly_chart(figP, config=config, use_container_width=True)
-
                 
             with col2_cp:
                 st.caption("&nbsp;")
@@ -361,7 +386,23 @@ else:
                 st.caption(data["yearsEmployed"])
                 st.markdown("**Source 2:**")
                 ext_source_2 = "{:,.3f}".format(data["source2"])
-                st.caption(ext_source_2)                
+                st.caption(ext_source_2) 
+            
+            st.caption("&nbsp;")
+            local_interpretation_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">📉 Local interpretation</h3>'
+            st.markdown(local_interpretation_title, unsafe_allow_html=True)
+
+            data_df = clients_df(client_id)
+            data_df = pd.read_json(data_df)
+            #st.pyplot(shap.force_plot(explainer.expected_value[1], shap_values[1][data["shapPosition"],:], data_df.iloc[0,:], matplotlib=True, show=False))
+
+
+            st.caption("FLAG") 
+            # visualize the first prediction's explanation (use matplotlib=True to avoid Javascript)
+            st_shap(shap.force_plot(explainer.expected_value[1], shap_values[1][data["shapPosition"],:], 
+                                    data_df.iloc[0,:]))
+
+
 
 
         if see_stats:
@@ -376,7 +417,6 @@ else:
                 external_title = ("Below, you can see some general 📊 **- statistics** about **clients** who " \
                         "**repaid** and do **not repaid** the loan based on **external souces** and **own information**")
                 st.info(external_title)
-                st.caption("&nbsp;")
 
                 client_information_title = '<h3 style="margin-bottom:0; padding: 0.5rem 0px 1rem;">🏦 External sources - General statistics</h3>'
                 st.markdown(client_information_title, unsafe_allow_html=True)
