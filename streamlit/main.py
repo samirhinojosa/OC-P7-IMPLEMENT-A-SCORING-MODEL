@@ -283,7 +283,7 @@ else:
         st.caption("&nbsp;")
 
         if see_local_interpretation or see_stats:
-            st.warning("**This/These option(s)** will take more time. Are you sure ?")
+            st.warning("**This / These option(s)** will take more time. Are you sure ?")
 
     with col3_cs:
 
@@ -327,11 +327,11 @@ else:
                             domain = {"x": [0, 1], "y": [0, 1]},
                             gauge = {
                                 "axis": {"range": [None, 100], "tickwidth": 1, "tickcolor": "darkblue", "tick0": 0, "dtick": 20},
-                                "bar": {"color": "LawnGreen"},
+                                "bar": {"color": "darkblue"},# LawnGreen
                                 "bgcolor": "white",
                                 "steps": [
-                                    {"range": [0, threshold], "color": "Green"},
-                                    {"range": [threshold, 100], "color": "Red"}
+                                    {"range": [0, threshold], "color": "#27AE60"},#Green
+                                    {"range": [threshold, 100], "color": "#E74C3C"}#red
                                 ],
                             }
                         )   

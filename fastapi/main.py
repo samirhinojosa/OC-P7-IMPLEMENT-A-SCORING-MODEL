@@ -78,7 +78,7 @@ async def clients_id():
 
 
 @app.get("/api/clients/{id}")
-async def clients(id: int):
+async def client_details(id: int):
     """ 
     EndPoint to get client's detail 
     """ 
@@ -152,7 +152,7 @@ async def predict(id: int):
 
 
 @app.get("/api/predictions/clients/shap/{id}")
-async def clients_df(id: int):
+async def client_shap_df(id: int):
     """ 
     EndPoint to return a df with all client's data
     """ 
