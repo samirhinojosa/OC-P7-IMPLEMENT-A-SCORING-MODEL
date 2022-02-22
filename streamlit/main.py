@@ -1,6 +1,5 @@
 import streamlit as st
 import streamlit.components.v1 as components
-
 import requests
 from PIL import Image
 import plotly.express as px
