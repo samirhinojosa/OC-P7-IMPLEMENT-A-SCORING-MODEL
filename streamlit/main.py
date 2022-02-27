@@ -428,9 +428,11 @@ else:
 
                     st.caption("&nbsp;")
 
-                    ext_source_2 = statistical_ext_source_2()
-                    ext_source_2_repaid = ext_source_2["ext_source_2_repaid"]
-                    ext_source_2_not_repaid = ext_source_2["ext_source_2_not_repaid"]
+                    if "ext_source_2" not in st.session_state:
+                        st.session_state["ext_source_2"] = statistical_ext_source_2()
+
+                    ext_source_2_repaid = st.session_state["ext_source_2"]["ext_source_2_repaid"]
+                    ext_source_2_not_repaid = st.session_state["ext_source_2"]["ext_source_2_not_repaid"]
                     ext_source_2_repaid_list = [float(key) for key, val in ext_source_2_repaid.items() for _ in range(val)]
                     ext_source_2_not_repaid_list = [float(key) for key, val in ext_source_2_not_repaid.items() for _ in range(val)]
 
@@ -474,9 +476,11 @@ else:
 
                     st.caption("&nbsp;")
 
-                    ext_source_3 = statistical_ext_source_3()
-                    ext_source_3_repaid = ext_source_3["ext_source_3_repaid"]
-                    ext_source_3_not_repaid = ext_source_3["ext_source_3_not_repaid"]
+                    if "ext_source_3" not in st.session_state:
+                        st.session_state["ext_source_3"] = statistical_ext_source_3()
+
+                    ext_source_3_repaid = st.session_state["ext_source_3"]["ext_source_3_repaid"]
+                    ext_source_3_not_repaid = st.session_state["ext_source_3"]["ext_source_3_not_repaid"]
                     ext_source_3_repaid_list = [float(key) for key, val in ext_source_3_repaid.items() for _ in range(val)]
                     ext_source_3_not_repaid_list = [float(key) for key, val in ext_source_3_not_repaid.items() for _ in range(val)]
 
@@ -528,9 +532,11 @@ else:
 
                     st.caption("&nbsp;")
 
-                    ages = statistical_ages()
-                    ages_repaid = ages["ages_repaid"]
-                    ages_not_repaid = ages["ages_not_repaid"]
+                    if "ages" not in st.session_state:
+                        st.session_state["ages"] = statistical_ages()
+
+                    ages_repaid = st.session_state["ages"]["ages_repaid"]
+                    ages_not_repaid = st.session_state["ages"]["ages_not_repaid"]
                     ages_repaid_list = [int(key) for key, val in ages_repaid.items() for _ in range(val)]
                     ages_not_repaid_list = [int(key) for key, val in ages_not_repaid.items() for _ in range(val)]
 
@@ -574,9 +580,11 @@ else:
 
                     st.caption("&nbsp;")
                     
-                    years_employed = statistical_years_employed()
-                    years_employed_repaid = years_employed["years_employed_repaid"]
-                    years_employed_not_repaid = years_employed["years_employed_not_repaid"]
+                    if "years_employed" not in st.session_state:
+                        st.session_state["years_employed"] = statistical_years_employed()
+
+                    years_employed_repaid = st.session_state["years_employed"]["years_employed_repaid"]
+                    years_employed_not_repaid = st.session_state["years_employed"]["years_employed_not_repaid"]
                     years_employed_repaid_list = [int(key) for key, val in years_employed_repaid.items() for _ in range(val)]
                     years_employed_not_repaid_list = [int(key) for key, val in years_employed_not_repaid.items() for _ in range(val)]
 
@@ -626,9 +634,11 @@ else:
 
                     st.caption("&nbsp;")
 
-                    amt_credit = statistical_amt_credit()
-                    amt_credit_repaid = amt_credit["amt_credit_repaid"]
-                    amt_credit_not_repaid = amt_credit["amt_credit_not_repaid"]
+                    if "amt_credit" not in st.session_state:
+                        st.session_state["amt_credit"] = statistical_amt_credit()
+
+                    amt_credit_repaid = st.session_state["amt_credit"]["amt_credit_repaid"]
+                    amt_credit_not_repaid = st.session_state["amt_credit"]["amt_credit_not_repaid"]
                     amt_credit_repaid_list = [float(key) for key, val in amt_credit_repaid.items() for _ in range(val)]
                     amt_credit_not_repaid_list = [float(key) for key, val in amt_credit_not_repaid.items() for _ in range(val)]
 
@@ -674,9 +684,11 @@ else:
                     else:
                         xaxis_range = None
 
-                    amt_income = statistical_amt_income()
-                    amt_income_repaid = amt_income["amt_income_repaid"]
-                    amt_income_not_repaid = amt_income["amt_income_not_repaid"]
+                    if "amt_income" not in st.session_state:
+                        st.session_state["amt_income"] = statistical_amt_income()
+
+                    amt_income_repaid = st.session_state["amt_income"]["amt_income_repaid"]
+                    amt_income_not_repaid = st.session_state["amt_income"]["amt_income_not_repaid"]
                     amt_income_repaid_list = [float(key) for key, val in amt_income_repaid.items() for _ in range(val)]
                     amt_income_not_repaid_list = [float(key) for key, val in amt_income_not_repaid.items() for _ in range(val)]
 
