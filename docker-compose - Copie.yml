@@ -4,7 +4,7 @@ services:
     fastapi:
         build: fastapi/
         volumes:
-            - ./:/usr/src/app
+            - .:/usr/src/app
         ports: 
             - 8008:8008
         networks:
@@ -14,7 +14,7 @@ services:
     streamlit:
         build: streamlit/
         volumes:
-            - ./:/usr/src/app
+            - .:/usr/src/app
         depends_on:
             - fastapi
         ports: 
